@@ -1,0 +1,111 @@
+# LCT Universal — production Apache config (Hostinger)
+# Copied into dist/ automatically by Vite (everything in /public ships as-is).
+
+# ---------------------------------------------------------------------------
+# HTTPS enforcement
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# SPA fallback — direct loads of /fleet, /corporate, /book, etc. must serve
+# index.html (client-side TanStack Router then renders the right route)
+# instead of a hard 404 from the file system.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  Header always set Permissions-Policy "geolocation=(self \"https://book.mylimobiz.com\"), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+  Header always set Cross-Origin-Resource-Policy "same-site"
+
+  # Content-Security-Policy — every third-party domain here is one actually
+  # verified in this codebase (MyLimoBiz widget, Google Ads/GA4 tags,
+  # StatCounter, Google Fonts, Supabase). No wildcards, no blanket
+  # unsafe-eval. `style-src 'unsafe-inline'` is a documented, deliberate
+  # exception: this app styles many elements via inline `style={{}}` props
+  # (dynamic gradients, GSAP-driven transforms) — removing it would require
+  # rewriting that styling approach app-wide, out of scope for this pass.
+  # `script-src` has no such exception — there is no inline/eval script
+  # anywhere in this codebase.
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Compression
+# ---------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml application/rss+xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Caching — hashed build assets are immutable; index.html and data files
+# (robots/sitemap) must always revalidate so deploys and content updates
+# show up immediately.
+# ---------------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/avif "access plus 1 year"
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xml "access plus 1 hour"
+  ExpiresByType text/plain "access plus 1 hour"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|woff2|png|jpe?g|webp|avif|mp4)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "^(robots\.txt|sitemap\.xml)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Correct MIME types (some shared hosts miss these)
+# ---------------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType image/webp .webp
+  AddType image/avif .avif
+  AddType video/mp4 .mp4
+  AddType font/woff2 .woff2
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Never index a debug/build artifact if one is accidentally deployed
+<FilesMatch "\.(map|log)$">
+  <IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex"
+  </IfModule>
+</FilesMatch>

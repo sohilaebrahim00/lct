@@ -1,0 +1,69 @@
+# LCT Universal — Netlify production config.
+# Netlify never reads public/.htaccess (that file is Hostinger/Apache-only) —
+# this is the equivalent SPA-fallback + security-header policy for Netlify.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# ---------------------------------------------------------------------------
+# SPA fallback — direct loads of /fleet, /corporate, /book, etc. (and a
+# refresh on any of them) must serve index.html so client-side TanStack
+# Router can render the right route, instead of Netlify's default 404.
+# ---------------------------------------------------------------------------
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ---------------------------------------------------------------------------
+# Security headers — identical policy to public/.htaccess (kept in sync
+# manually; every third-party domain here is one actually verified in this
+# codebase: MyLimoBiz widget, Google Ads/GA4 tags, StatCounter, Google
+# Fonts, Supabase).
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(self \"https://book.mylimobiz.com\"), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Resource-Policy = "same-site"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests"
+
+# Hashed build assets (js/css/images/video/fonts all land in dist/assets/) are
+# immutable — safe to cache for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# index.html must always revalidate so deploys show up immediately.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
+
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/sitemap.xml"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# Never index a debug/build artifact if one is accidentally deployed.
+[[headers]]
+  for = "/*.map"
+  [headers.values]
+    X-Robots-Tag = "noindex"

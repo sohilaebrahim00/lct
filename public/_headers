@@ -1,0 +1,36 @@
+# LCT Universal — Netlify security headers.
+# Netlify never reads public/.htaccess (that file is Hostinger/Apache-only).
+# Kept in sync manually with netlify.toml and public/.htaccess — every
+# third-party domain here is one actually verified in this codebase
+# (MyLimoBiz widget, Google Ads/GA4 tags, StatCounter, Google Fonts, Supabase).
+#
+# This file (not just netlify.toml) is what makes the headers apply even on
+# a plain drag-and-drop deploy of the dist/ folder — Netlify's build-config
+# file (netlify.toml) is only read for CLI/Git-based deploys run from the
+# project root, but _headers/_redirects inside the published folder itself
+# are honored by every Netlify deploy method.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Permissions-Policy: geolocation=(self "https://book.mylimobiz.com"), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  Cross-Origin-Resource-Policy: same-site
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+
+/*.map
+  X-Robots-Tag: noindex

@@ -1,0 +1,47 @@
+{
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "vite.config.ts",
+    "eslint.config.js"
+  ],
+  "exclude": [
+    "src/server.ts",
+    "src/start.ts",
+    "src/**/*.server.ts",
+    "src/**/*.functions.ts",
+    "src/lib/mcp/**",
+    "src/routes/mcp.ts",
+    "src/integrations/supabase/auth-attacher.ts",
+    "src/integrations/supabase/auth-middleware.ts"
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "types": [
+      "vite/client"
+    ],
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}

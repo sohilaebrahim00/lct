@@ -1,0 +1,954 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-display: "Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* Proportional, not subtractive — with the site's deliberately tiny 0.2rem
+     base radius (a sharp, architectural look, not a bubbly one), the
+     shadcn-default "subtract N px" formula went negative for -sm and was
+     silently rendering as a hard 0px square corner on every one of the ~57
+     `rounded-sm` buttons/cards sitewide instead of the intended soft
+     micro-rounding. A multiplicative scale keeps every step positive and
+     visibly distinct while staying within the same sharp aesthetic. */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --color-champagne: var(--champagne);
+  --color-onyx: var(--onyx);
+  --color-charcoal: var(--charcoal);
+  --color-surface-black: var(--surface-black);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-off-white: var(--off-white);
+}
+
+:root {
+  --radius: 0.2rem;
+
+  /* Layout */
+  --container-max: 80rem;
+  --page-gutter: clamp(1.25rem, 4vw, 2.5rem);
+  --section-space: clamp(4.5rem, 10vw, 8rem);
+  --header-height: 4.75rem;
+  --text-measure: 38rem;
+
+  /* Motion */
+  --motion-fast: 180ms;
+  --motion-base: 420ms;
+  --motion-slow: 800ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Z-index */
+  --z-base: 1;
+  --z-header: 50;
+  --z-overlay: 40;
+  --z-modal: 60;
+  --z-toast: 70;
+
+  /* Luxury palette — near black, charcoal, champagne gold accent */
+  --surface-black: oklch(0.08 0.004 60);
+  --surface-elevated: oklch(0.11 0.005 60);
+  --onyx: oklch(0.14 0.005 60);
+  --charcoal: oklch(0.22 0.005 60);
+  --champagne: oklch(0.82 0.08 88);
+  --gold: oklch(0.78 0.11 84);
+  --gold-soft: oklch(0.88 0.07 90);
+  --gold-deep: oklch(0.58 0.11 72);
+  --off-white: oklch(0.96 0.01 90);
+
+  --background: var(--surface-black);
+  --foreground: var(--off-white);
+
+  --card: var(--onyx);
+  --card-foreground: var(--off-white);
+  --popover: var(--onyx);
+  --popover-foreground: var(--off-white);
+
+  --primary: var(--gold);
+  --primary-foreground: oklch(0.12 0.005 60);
+  --secondary: var(--charcoal);
+  --secondary-foreground: var(--off-white);
+  --muted: oklch(0.18 0.005 60);
+  --muted-foreground: oklch(0.68 0.015 75);
+  --accent: oklch(0.2 0.01 80);
+  --accent-foreground: var(--champagne);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 80);
+  --border: oklch(0.3 0.01 75 / 0.45);
+  --input: var(--charcoal);
+  --ring: var(--champagne);
+
+  --gradient-gold: linear-gradient(
+    135deg,
+    oklch(0.9 0.06 92) 0%,
+    oklch(0.78 0.11 84) 48%,
+    oklch(0.55 0.1 72) 100%
+  );
+  --gradient-onyx: linear-gradient(180deg, var(--surface-black) 0%, var(--onyx) 100%);
+  --gradient-surface: linear-gradient(
+    165deg,
+    oklch(0.14 0.008 70 / 0.9) 0%,
+    oklch(0.09 0.004 60) 55%,
+    oklch(0.11 0.01 80 / 0.55) 100%
+  );
+  --shadow-luxe: 0 30px 80px -20px oklch(0 0 0 / 0.65), 0 8px 24px -8px oklch(0.78 0.11 84 / 0.12);
+  --shadow-gold: 0 18px 48px -18px oklch(0.78 0.11 84 / 0.32);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--champagne);
+    color: var(--onyx);
+  }
+}
+
+/*
+ * Deliberately UNLAYERED (not inside @layer base/components/utilities):
+ * Tailwind v4's cascade layers give `@layer utilities` (where `cursor-pointer`
+ * and friends live, used throughout the shadcn/Radix components) higher
+ * precedence than `@layer base` REGARDLESS of selector specificity — so a
+ * same-layer or lower-layer `cursor: none` rule can never fully win against
+ * every `cursor-pointer` in the app. Unlayered CSS always beats every layer,
+ * which is what "no native cursor flashes, anywhere, ever" actually requires.
+ */
+html.cursor-none,
+html.cursor-none body,
+html.cursor-none * {
+  cursor: none !important;
+}
+
+/*
+ * Native cursor exceptions: text entry, editable content and third-party
+ * embeds are where the OS cursor (I-beam, iframe-native pointer) genuinely
+ * communicates more than our decorative pin — the Cursor component also
+ * fades its visuals out over these targets (see the text-zone check in
+ * cursor.tsx) so the native cursor is never fighting a hidden custom one.
+ */
+html.cursor-none input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.cursor-none textarea,
+html.cursor-none select,
+html.cursor-none [contenteditable="true"],
+html.cursor-none iframe {
+  cursor: auto !important;
+}
+
+@utility text-measure {
+  max-width: var(--text-measure);
+}
+
+@utility text-gold-gradient {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility bg-gold-gradient {
+  background: var(--gradient-gold);
+}
+
+@utility hairline {
+  position: relative;
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+@utility luxe-card {
+  background: linear-gradient(180deg, oklch(0.16 0.005 60 / 0.9), oklch(0.11 0.005 60 / 0.9));
+  border: 1px solid oklch(0.78 0.13 82 / 0.15);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-luxe);
+}
+
+@utility glass {
+  background: oklch(0.14 0.005 60 / 0.65);
+  border: 1px solid oklch(0.78 0.13 82 / 0.2);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes luxuryShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 250% 50%; }
+}
+@utility text-metallic {
+  background: linear-gradient(
+    100deg,
+    #A86C00 0%,
+    #DCA900 15%,
+    #FFD84A 32%,
+    #FFF4B5 46%,
+    #FFFFFF 55%,
+    #FFD84A 68%,
+    #DCA900 82%,
+    #A86C00 100%
+  );
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: luxuryShimmer 8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-metallic { animation: none; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+@utility animate-shimmer {
+  background: linear-gradient(90deg, transparent, oklch(0.78 0.13 82 / 0.3), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Hero ambient gold gradient — GPU-accelerated, transform-only motion */
+@keyframes ambientDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(2%, -1.5%, 0) scale(1.05); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+@utility hero-ambient {
+  background:
+    radial-gradient(60% 45% at 68% 55%, oklch(0.55 0.14 70 / 0.35), transparent 70%),
+    radial-gradient(45% 35% at 25% 30%, oklch(0.78 0.13 82 / 0.18), transparent 65%),
+    radial-gradient(55% 40% at 50% 100%, oklch(0.09 0.004 60), transparent 60%);
+  will-change: transform;
+  animation: ambientDrift 24s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-ambient { animation: none; }
+}
+
+/* Gold sweep — plays once over metallic text on entrance */
+@keyframes goldSweep {
+  0%   { background-position: 200% 50%; }
+  100% { background-position: -100% 50%; }
+}
+@utility text-metallic-sweep {
+  background: linear-gradient(
+    110deg,
+    #8f6419 0%,
+    #d6a53c 20%,
+    #fff0b0 38%,
+    #b57a1e 55%,
+    #f5d779 72%,
+    #8c6018 100%
+  );
+  background-size: 250% auto;
+  background-position: 100% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: goldSweep 2.6s cubic-bezier(0.22, 1, 0.36, 1) 0.4s 1 both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .text-metallic-sweep {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
+
+/* Benefit strip — staggered, overlapping transitions */
+@keyframes benefit-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes benefit-title {
+  0%   { opacity: 0; transform: translateY(85%); filter: blur(6px); }
+  55%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes benefit-icon {
+  0%   { opacity: 0; transform: scale(0.9); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes benefit-progress {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="benefit-"] { animation: none !important; }
+}
+
+/* Slow subtle image drift for depth in soft slides */
+@keyframes imageDrift {
+  0%   { transform: scale(1.03) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.06) translate3d(-0.8%, -0.4%, 0); }
+  100% { transform: scale(1.03) translate3d(0, 0, 0); }
+}
+@utility image-drift {
+  animation: imageDrift 22s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes heroDrift {
+  0%   { transform: scale(1.04) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.055) translate3d(-0.35%, -0.25%, 0); }
+  100% { transform: scale(1.04) translate3d(0, 0, 0); }
+}
+@utility hero-drift {
+  animation: heroDrift 32s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .image-drift, .hero-drift { animation: none; }
+}
+
+/* Cinematic hero image entrance — vehicle glides in from the right on load */
+@keyframes heroEnter {
+  0%   { transform: translate3d(9%, 0, 0) scale(1.09); opacity: 0; filter: blur(14px); }
+  55%  { opacity: 1; filter: blur(2px); }
+  100% { transform: translate3d(0, 0, 0) scale(1.04); opacity: 1; filter: blur(0); }
+}
+@utility hero-enter {
+  animation: heroEnter 2.6s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+  will-change: transform, opacity, filter;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter { animation: none; }
+}
+
+/* Generic fade + rise for staggered content entrances */
+@keyframes fadeRise {
+  0%   { opacity: 0; transform: translate3d(0, 14px, 0); filter: blur(6px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [style*="fadeRise"] { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+
+/* Brand loader — cinematic automotive intro */
+@keyframes heroLightSweep {
+  0%,
+  100% {
+    transform: translate3d(-8%, 0, 0);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(10%, 0, 0);
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-grad [style*="heroLightSweep"] {
+    animation: none !important;
+  }
+}
+
+@keyframes loaderRoad {
+  0%   { opacity: 0; transform: translateY(-50%) scaleX(0.4); }
+  40%  { opacity: 1; }
+  100% { opacity: 0.9; transform: translateY(-50%) scaleX(1); }
+}
+@keyframes loaderLamp {
+  0%   { opacity: 0; transform: translateY(-50%) scale(0.4); }
+  60%  { opacity: 1; transform: translateY(-50%) scale(1.05); }
+  100% { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+@keyframes loaderDrive {
+  0%   { transform: translate(-140%, -50%); }
+  55%  { transform: translate(-50%, -50%); }
+  100% { transform: translate(75%, -50%); opacity: 0; }
+}
+@keyframes loaderTrail {
+  0%   { transform: scaleX(0); opacity: 0; }
+  35%  { opacity: 1; }
+  70%  { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes loaderLogo {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.94); filter: blur(6px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+}
+
+/* Light sweep — polished-metal reflection, plays once on enter */
+@keyframes lightSweep {
+  0%   { transform: translateX(-160%) skewX(-16deg); opacity: 0; }
+  20%  { opacity: 0.22; }
+  80%  { opacity: 0.22; }
+  100% { transform: translateX(240%) skewX(-16deg); opacity: 0; }
+}
+@utility light-sweep {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+.light-sweep::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  width: 55%;
+  background: radial-gradient(
+    ellipse 50% 100% at 50% 50%,
+    oklch(1 0 0 / 0.18) 0%,
+    oklch(0.96 0.04 88 / 0.10) 40%,
+    transparent 70%
+  );
+  filter: blur(14px);
+  animation: lightSweep 5.5s cubic-bezier(0.4, 0, 0.2, 1) 1.4s 1 forwards;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .light-sweep::before { animation: none; opacity: 0; }
+}
+
+
+
+/* Subtle film grain */
+@utility film-grain {
+  position: relative;
+}
+.film-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 0.87  0 0 0 0 0.55  0 0 0 0.6 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+
+
+/* ---------- Pseudo-3D metal badge (layered SVG + CSS transforms) ---------- */
+@utility icon3d-badge {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+  perspective: 900px;
+  perspective-origin: 30% 25%;
+  transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.icon3d-badge__stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(6deg) rotateY(-7deg);
+  animation: icon3dFloat 7.4s ease-in-out infinite;
+  transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.icon3d-badge__layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.icon3d-badge__back {
+  transform: translateZ(-6px);
+  background: radial-gradient(120% 120% at 50% 60%, #14100a 0%, #0a0805 55%, #050403 100%);
+  box-shadow: 0 10px 20px -10px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5);
+}
+.icon3d-badge__disc {
+  transform: translateZ(-2px);
+  background: radial-gradient(120% 120% at 32% 22%, #221a10 0%, #120e08 45%, #0a0806 75%, #060504 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(230,205,155,0.18),
+    inset 0 -2px 5px rgba(0,0,0,0.6),
+    inset 0 0 18px rgba(0,0,0,0.45);
+}
+.icon3d-badge__rim {
+  background: conic-gradient(from 210deg,
+    #6b4f2c 0deg, #a88656 60deg, #d4b783 100deg, #ecd7a8 130deg,
+    #bd9a64 210deg, #7d5f34 300deg, #4f3a20 340deg, #6b4f2c 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px) 50%);
+          mask: radial-gradient(circle, transparent 0 calc(50% - 1px), #000 calc(50% - 1px) 50%);
+  filter: drop-shadow(0 0 0.5px rgba(230,205,155,0.14));
+  opacity: 0.82;
+}
+.icon3d-badge__ring {
+  transform: translateZ(1px);
+  inset: 8%;
+  background: conic-gradient(from 40deg,
+    #3a2815 0deg, #6a4a24 60deg, #8a6a3a 120deg,
+    #5a4224 200deg, #3a2815 300deg, #3a2815 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 0.75px), #000 calc(50% - 0.75px) 50%);
+          mask: radial-gradient(circle, transparent 0 calc(50% - 0.75px), #000 calc(50% - 0.75px) 50%);
+  opacity: 0.42;
+}
+.icon3d-badge__well {
+  transform: translateZ(0.5px);
+  inset: 11%;
+  background: radial-gradient(80% 80% at 38% 32%, #17120a 0%, #0a0806 60%, #050403 100%);
+  box-shadow: inset 0 1.5px 3px rgba(0,0,0,0.75), inset 0 -1px 1px rgba(230,205,155,0.05);
+}
+.icon3d-badge__gloss {
+  transform: translateZ(2px);
+  background:
+    radial-gradient(55% 35% at 30% 18%, rgba(246,233,203,0.13), transparent 72%),
+    radial-gradient(25% 18% at 78% 82%, rgba(228,198,138,0.04), transparent 72%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+/* Slight three-quarter perspective variant (e.g. airport plane) */
+.icon3d-badge[data-tilt="true"] .icon3d-badge__stage {
+  transform: rotateX(10deg) rotateY(-14deg);
+  animation-name: icon3dFloatTilt;
+}
+.icon3d-badge[data-tilt="true"]:hover .icon3d-badge__stage {
+  transform: rotateX(8deg) rotateY(-12deg) translateZ(3px) scale(1.015);
+}
+@keyframes icon3dFloatTilt {
+  0%, 100% { transform: rotateX(10deg) rotateY(-14deg) translateY(0); }
+  50%      { transform: rotateX(9deg) rotateY(-12deg) translateY(-3px); }
+}
+.icon3d-badge__glyph {
+  position: absolute;
+  inset: 20%;
+  transform: translateZ(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 0 rgba(255,240,190,0.6)) drop-shadow(0 2px 3px rgba(0,0,0,0.85));
+}
+.icon3d-badge__sweep {
+  transform: translateZ(3px);
+  overflow: hidden;
+  -webkit-mask: radial-gradient(circle, #000 0 50%, transparent 50%);
+          mask: radial-gradient(circle, #000 0 50%, transparent 50%);
+}
+.icon3d-badge__sweep::before {
+  content: "";
+  position: absolute;
+  top: -20%; bottom: -20%;
+  left: -60%; width: 40%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg,
+    transparent 0%, rgba(246,233,203,0) 20%,
+    rgba(246,233,203,0.28) 50%,
+    rgba(246,233,203,0) 80%, transparent 100%);
+  filter: blur(8px);
+  opacity: 0;
+}
+.icon3d-badge[data-in="true"] .icon3d-badge__sweep::before {
+  animation: icon3dSweep 2.8s cubic-bezier(0.22, 0.65, 0.32, 1) 0.5s 1 both;
+}
+.icon3d-badge__shadow {
+  position: absolute;
+  left: 14%; right: 14%; bottom: -6%;
+  height: 12%;
+  border-radius: 9999px;
+  background: radial-gradient(50% 100% at 50% 0%, rgba(0,0,0,0.5) 0%, transparent 72%);
+  filter: blur(6px);
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 380ms ease, transform 380ms ease;
+}
+.icon3d-badge:hover .icon3d-badge__stage {
+  transform: rotateX(4deg) rotateY(-5deg) translateZ(3px) scale(1.015);
+}
+.icon3d-badge:hover .icon3d-badge__rim {
+  filter: drop-shadow(0 0 2px rgba(246,233,203,0.35)) brightness(1.05);
+}
+.icon3d-badge:hover .icon3d-badge__shadow {
+  transform: translateY(2px) scaleX(1.08);
+  opacity: 0.8;
+}
+.icon3d-badge:hover .icon3d-badge__sweep::before {
+  animation: icon3dSweep 2s cubic-bezier(0.22, 0.65, 0.32, 1) 1 both;
+}
+@keyframes icon3dFloat {
+  0%, 100% { transform: rotateX(6deg) rotateY(-7deg) translateY(0); }
+  50%      { transform: rotateX(5deg) rotateY(-5deg) translateY(-3px); }
+}
+@keyframes icon3dSweep {
+  0%   { transform: translateX(0) rotate(18deg); opacity: 0; }
+  20%  { opacity: 0.9; }
+  100% { transform: translateX(340%) rotate(18deg); opacity: 0; }
+}
+@media (max-width: 768px) {
+  .icon3d-badge { perspective: 700px; }
+  .icon3d-badge__stage { transform: rotateX(4deg) rotateY(-4deg); animation-duration: 9s; }
+  .icon3d-badge:hover .icon3d-badge__stage { transform: rotateX(4deg) rotateY(-4deg) translateZ(2px) scale(1.01); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon3d-badge__stage { animation: none; transform: rotateX(4deg) rotateY(-5deg); }
+  .icon3d-badge__sweep::before,
+  .icon3d-badge[data-in="true"] .icon3d-badge__sweep::before { animation: none; opacity: 0; }
+}
+
+
+/* Layered metal badge: extruded back face, beveled rim, recessed well,
+   raised gold glyph, drifting bevel highlight. Slight default perspective
+   so the badge reads as a physical object, not a flat disc. */
+@utility medallion3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  transform-style: preserve-3d;
+}
+
+.medallion3d__back {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  transform: translate(2px, 3px);
+  background: radial-gradient(60% 60% at 40% 40%, oklch(0.16 0.02 60) 0%, oklch(0.05 0.005 50) 80%);
+  box-shadow:
+    0 18px 32px -14px oklch(0 0 0 / 0.85),
+    0 6px 12px -6px oklch(0 0 0 / 0.7);
+  z-index: 0;
+}
+
+.medallion3d__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  transform-style: preserve-3d;
+  transform: perspective(420px) rotateX(6deg) rotateY(-6deg);
+  transition: transform 480ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+  z-index: 1;
+}
+
+.medallion3d__rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    conic-gradient(
+      from 200deg,
+      oklch(0.42 0.07 60) 0deg,
+      oklch(0.88 0.12 82) 60deg,
+      oklch(0.98 0.08 88) 90deg,
+      oklch(0.72 0.13 78) 140deg,
+      oklch(0.32 0.05 55) 210deg,
+      oklch(0.55 0.10 68) 280deg,
+      oklch(0.92 0.11 82) 320deg,
+      oklch(0.42 0.07 60) 360deg
+    );
+  box-shadow:
+    0 22px 44px -18px oklch(0 0 0 / 0.9),
+    0 2px 0 oklch(0.94 0.08 82 / 0.25);
+}
+
+.medallion3d__well {
+  position: absolute;
+  inset: 8%;
+  border-radius: 9999px;
+  background:
+    radial-gradient(80% 65% at 35% 25%, oklch(0.32 0.04 60 / 0.9) 0%, transparent 55%),
+    radial-gradient(120% 120% at 60% 80%, oklch(0.18 0.015 55) 0%, oklch(0.08 0.005 50) 70%, oklch(0.04 0 0) 100%);
+  box-shadow:
+    inset 0 2px 3px oklch(0 0 0 / 0.85),
+    inset 0 -1px 0 oklch(0.86 0.09 82 / 0.35),
+    inset 0 6px 14px oklch(0 0 0 / 0.55);
+}
+
+.medallion3d__highlight {
+  position: absolute;
+  top: 4%;
+  left: 22%;
+  right: 22%;
+  height: 22%;
+  border-radius: 9999px;
+  background: radial-gradient(60% 100% at 50% 0%, oklch(1 0 0 / 0.55) 0%, oklch(1 0 0 / 0.08) 55%, transparent 80%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: blur(2px);
+}
+
+.medallion3d__glyph {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(6px);
+  filter:
+    drop-shadow(0 2px 1.5px oklch(0 0 0 / 0.75))
+    drop-shadow(0 6px 8px oklch(0 0 0 / 0.5));
+}
+
+@keyframes medallionSweep {
+  0%   { transform: translateX(-140%) rotate(-18deg); opacity: 0; }
+  15%  { opacity: 0.55; }
+  85%  { opacity: 0.55; }
+  100% { transform: translateX(140%) rotate(-18deg); opacity: 0; }
+}
+.medallion3d__sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: radial-gradient(circle, transparent 55%, black 62%, black 92%, transparent 100%);
+          mask: radial-gradient(circle, transparent 55%, black 62%, black 92%, transparent 100%);
+}
+.medallion3d__sweep::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.7), transparent);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+  animation: medallionSweep 6.5s cubic-bezier(0.55, 0.05, 0.35, 1) 1.2s infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes medallionFloat {
+  0%, 100% { transform: perspective(420px) rotateX(6deg) rotateY(-6deg) translateY(0); }
+  50%      { transform: perspective(420px) rotateX(4deg) rotateY(-3deg) translateY(-2px); }
+}
+.medallion3d__stage {
+  animation: medallionFloat 7s ease-in-out infinite;
+}
+
+.medallion3d:hover .medallion3d__rim {
+  box-shadow:
+    0 30px 56px -18px oklch(0 0 0 / 0.95),
+    0 2px 0 oklch(0.96 0.09 82 / 0.4),
+    0 0 0 1px oklch(0.94 0.12 82 / 0.4);
+}
+.medallion3d:hover .medallion3d__back {
+  transform: translate(3px, 5px);
+}
+
+@keyframes icon3dEnter {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.94); filter: blur(4px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+.icon3d-enter {
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+.icon3d-enter[data-in="true"] {
+  animation: icon3dEnter 900ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon3d-enter,
+  .icon3d-enter[data-in="true"] { animation: none; opacity: 1; transform: none; filter: none; }
+  .medallion3d__stage { animation: none; transition: none; }
+  .medallion3d__sweep::before { animation: none; opacity: 0; }
+}
+
+/* ---------- Luxury horizontal service card ---------- */
+@utility service-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: 2.25rem 2.25rem 2rem;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  border: 1px solid oklch(0.78 0.09 82 / 0.10);
+  background:
+    radial-gradient(120% 90% at 20% 0%, oklch(0.94 0.06 82 / 0.045), transparent 55%),
+    radial-gradient(100% 80% at 100% 100%, oklch(0.55 0.06 60 / 0.06), transparent 60%),
+    linear-gradient(180deg, oklch(0.15 0.006 60 / 0.9), oklch(0.09 0.004 55 / 0.9));
+  backdrop-filter: blur(18px);
+  box-shadow:
+    inset 0 1px 0 oklch(0.94 0.06 82 / 0.05),
+    0 16px 32px -24px oklch(0 0 0 / 0.6);
+  transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 520ms ease,
+              box-shadow 520ms ease;
+}
+.service-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 42%, oklch(0.94 0.07 82 / 0.06) 50%, transparent 58%);
+  transform: translateX(-120%);
+  transition: transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.service-card:hover {
+  transform: translateY(-4px);
+  border-color: oklch(0.86 0.09 82 / 0.34);
+  box-shadow:
+    inset 0 1px 0 oklch(0.94 0.08 82 / 0.12),
+    0 28px 56px -24px oklch(0 0 0 / 0.75);
+}
+.service-card:hover::before {
+  transform: translateX(120%);
+}
+.service-card .icon3d-badge {
+  transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.service-card:hover .icon3d-badge {
+  transform: translateY(-2px);
+}
+.service-card:hover .icon3d-badge__sweep::before {
+  animation: icon3dSweep 1.9s cubic-bezier(0.22, 0.65, 0.32, 1) 1 both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-card:hover { transform: none; }
+  .service-card:hover .icon3d-badge { transform: none; }
+  .service-card:hover .icon3d-badge__sweep::before { animation: none; opacity: 0; }
+}
+
+/* ---------- Fullscreen luxury mobile menu ---------- */
+@keyframes menuOverlayIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes menuItemIn {
+  0%   { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes menuDividerIn {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+.menu-overlay { animation: menuOverlayIn 420ms ease-out both; }
+.menu-item { opacity: 0; animation: menuItemIn 720ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.menu-divider { transform-origin: left center; animation: menuDividerIn 900ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .menu-overlay, .menu-item, .menu-divider { animation: none; opacity: 1; transform: none; filter: none; }
+}
+
+
+/* Floating action buttons (Phone / WhatsApp) */
+@utility fab-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  border: 1px solid oklch(0.78 0.12 80 / 0.55);
+  background:
+    radial-gradient(120% 100% at 30% 25%, oklch(0.24 0.02 60) 0%, oklch(0.10 0.01 50) 70%, oklch(0.06 0 0) 100%);
+  box-shadow:
+    inset 0 1px 0 oklch(0.92 0.10 82 / 0.35),
+    inset 0 -8px 16px oklch(0 0 0 / 0.55),
+    0 12px 28px -12px oklch(0 0 0 / 0.75),
+    0 6px 18px -10px oklch(0.55 0.10 60 / 0.35);
+  color: #fff;
+  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 260ms ease,
+              box-shadow 260ms ease;
+}
+.fab-btn:hover {
+  transform: translateY(-3px);
+  border-color: oklch(0.90 0.14 82 / 0.9);
+  box-shadow:
+    inset 0 1px 0 oklch(0.94 0.10 82 / 0.45),
+    inset 0 -8px 16px oklch(0 0 0 / 0.55),
+    0 18px 36px -12px oklch(0 0 0 / 0.85),
+    0 0 0 1px oklch(0.90 0.14 82 / 0.35);
+}
+.fab-btn--gold {
+  background:
+    radial-gradient(120% 100% at 30% 25%, oklch(0.90 0.14 82) 0%, oklch(0.68 0.13 76) 55%, oklch(0.42 0.09 60) 100%);
+  color: oklch(0.14 0.01 50);
+  border-color: oklch(0.94 0.10 82 / 0.85);
+}
+
+@keyframes fabPulse {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  60%  { transform: scale(1.4); opacity: 0.25; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+.fab-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #25D366;
+  box-shadow: 0 0 4px oklch(0.78 0.18 150 / 0.7), 0 0 0 1.5px oklch(0.10 0 0);
+}
+.fab-btn:hover .fab-dot::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: #25D366;
+  animation: fabPulse 900ms ease-out 1 both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab-btn { transition: none; }
+  .fab-btn:hover .fab-dot::after { animation: none; }
+}

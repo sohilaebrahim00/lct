@@ -1,0 +1,45 @@
+# Reference nginx config — NOT used by Hostinger (Apache/.htaccess is the
+# active config at public/.htaccess). Kept here only in case this site is
+# ever migrated to an nginx-based host. Mirrors public/.htaccess exactly:
+# SPA fallback, security headers, CSP, compression, and cache rules.
+
+server {
+  listen 443 ssl http2;
+  server_name lctuniversal.com www.lctuniversal.com;
+  root /var/www/lctuniversal/dist;
+  index index.html;
+
+  # HTTPS is assumed terminated here; add an additional :80 server block
+  # that 301-redirects to this one for HTTP -> HTTPS enforcement.
+
+  gzip on;
+  gzip_types text/plain text/css application/javascript application/json
+             application/xml text/xml image/svg+xml;
+
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header X-Frame-Options "SAMEORIGIN" always;
+  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+  add_header Permissions-Policy "geolocation=(self \"https://book.mylimobiz.com\"), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()" always;
+  add_header Cross-Origin-Opener-Policy "same-origin-allow-popups" always;
+  add_header Cross-Origin-Resource-Policy "same-site" always;
+  add_header Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests" always;
+
+  location ~* \.(?:css|js|woff2|png|jpe?g|webp|avif|mp4)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+  }
+
+  location = /index.html {
+    add_header Cache-Control "no-cache, must-revalidate";
+  }
+
+  location ~* ^/(robots\.txt|sitemap\.xml)$ {
+    expires 1h;
+  }
+
+  # SPA fallback — anything not a real file goes to index.html.
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      No static <title>/<meta name="description">/<meta name="theme-color">
+      here on purpose: `__root.tsx`'s `head()` (via TanStack Router's
+      <HeadContent/>) is the single source for these, with each route's own
+      `head()` overriding it per-page. HeadContent appends its managed tags
+      rather than replacing pre-existing static ones with the same
+      name/property, so a static tag here would sit alongside — not
+      override — the dynamic one, producing two <title>/description tags on
+      every page (this was verified happening before this fix).
+    -->
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Loaded statically (not via head()) so the browser can start
+         fetching font CSS before JS parses — the actual families the site
+         uses (Cormorant Garamond display / Manrope body, see styles.css). -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

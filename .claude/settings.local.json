@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"console.log\\(require\\('fs'\\).statSync\\('src/assets/ChatGPT Image Feb 11, 2026, 06_41_20 PM.jpg'\\).size\\)\")",
+      "Bash(node -e \"try{require.resolve\\('sharp'\\); console.log\\('sharp available'\\)}catch\\(e\\){console.log\\('no sharp'\\)}\")",
+      "Bash(node -e \"console.log\\(JSON.parse\\(require\\('fs'\\).readFileSync\\('package.json'\\)\\).devDependencies\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(node -e \"try{require.resolve\\('playwright'\\);console.log\\('playwright available'\\)}catch\\(e\\){console.log\\('no playwright'\\)}\")",
+      "Bash(node -e \"try{require.resolve\\('puppeteer'\\);console.log\\('puppeteer available'\\)}catch\\(e\\){console.log\\('no puppeteer'\\)}\")",
+      "Bash(timeout 15 npm view playwright version)",
+      "Bash(npx -y playwright@1.62.1 install chromium)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\sohila\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-sohila-Downloads-LCT-Universal-Vite-Ready-v2-lct-migrate\\\\d236167c-a408-4e72-956d-023146ed2dd9\\\\scratchpad\\\\pw\")",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(npx playwright *)",
+      "Bash(node shot.js http://localhost:5173 1440 900 top.png 0)",
+      "Bash(node find_stories.js)",
+      "Bash(sed -i 's/window.innerHeight + 200/1100/' scan_wheel.js)",
+      "Bash(node scan_wheel.js)",
+      "Bash(lsof -ti:5173 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(curl -s http://localhost:4174/)"
+    ]
+  }
+}
