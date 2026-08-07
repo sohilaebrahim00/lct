@@ -156,7 +156,16 @@ export function VehicleObjectJourney() {
           aria-hidden
         />
 
-        <div className="relative z-10 mx-auto grid w-full max-w-[var(--container-max)] gap-10 px-[var(--page-gutter)] lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        {/* `items-start`, not `items-center` — this grid row's own image
+            column is ~900px tall (a large `object-contain` image, unrelated
+            to the viewport), so centering the much-shorter text column
+            against it was pushing the text ~290px below the row's own top
+            edge even after the outer wrapper's alignment was already fixed
+            to anchor near the top — confirmed via direct ancestor-chain
+            inspection (`.max-w-md`'s own top sat ~290px below its parent
+            row's top). `items-start` keeps the text at the row's actual top
+            instead of the visual midpoint of a very tall sibling. */}
+        <div className="relative z-10 mx-auto grid w-full max-w-[var(--container-max)] gap-10 px-[var(--page-gutter)] lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
           <div className="max-w-md">
             <div className="eyebrow text-champagne">Object in Motion</div>
             <h2 className="vehicle-copy mt-4 font-display text-4xl leading-tight text-off-white md:text-5xl lg:translate-y-6 lg:opacity-0">
