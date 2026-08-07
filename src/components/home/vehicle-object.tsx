@@ -46,7 +46,7 @@ export function VehicleObjectJourney() {
         },
       );
 
-      gsap
+      const pinTl = gsap
         .timeline({
           scrollTrigger: {
             trigger: root,
@@ -55,6 +55,13 @@ export function VehicleObjectJourney() {
             pin: true,
             scrub: 1,
             anticipatePin: 1,
+            onUpdate: (self) => {
+              // Fade IN only, during the pin's own final 14% — this half is
+              // unchanged from the original, always-correct pattern.
+              if (self.progress >= 1) return;
+              const handoff = gsap.utils.clamp(0, 1, (self.progress - 0.86) / 0.14);
+              gsap.set(".vehicle-handoff", { autoAlpha: handoff });
+            },
           },
         })
         .to(".vehicle-rig", { xPercent: -5, scale: 1, duration: 1, ease: "none" }, 0)
@@ -72,40 +79,46 @@ export function VehicleObjectJourney() {
         .to(".vehicle-streak-2", { xPercent: 140, autoAlpha: 0.45, duration: 0.6, ease: "power1.in" }, 1.35)
         .to(".vehicle-streak-2", { autoAlpha: 0, duration: 0.2 }, 1.85);
 
-      // `.vehicle-handoff` previously had two separate systems writing its
-      // opacity: the pin's own onUpdate (fading it in during the final 14%
-      // of pin progress) and a second, independent ScrollTrigger meant to
-      // fade it back out afterward. Confirmed live via debug instrumentation
-      // that this was a genuine conflict, not just the earlier endTrigger
-      // selector-scoping bug (also real, and fixed below): the second
-      // ScrollTrigger's own progress correctly reached 1.0 (autoAlpha
-      // correctly tweened to 0 in GSAP's bookkeeping), yet the computed
-      // style stayed at opacity 1 the entire time — the pin's onUpdate,
-      // which keeps running on every scroll tick even after its own
-      // progress has clamped to 1 post-`end`, was re-asserting autoAlpha:1
-      // on top of it every frame. Consolidated into ONE timeline (fade in ->
-      // hold -> fade out) so there's a single writer for this property,
-      // spanning from 86% into the pin's own progress through the natural
-      // post-pin approach into PinnedStories. `endTrigger` must be a real
-      // element reference, not selector text — `gsap.context()` scopes
-      // selector-text lookups (including ScrollTrigger's trigger/endTrigger
-      // strings) to this effect's own `root`, so "#stories" (a sibling, not
-      // a descendant) would otherwise silently fail to resolve.
-      const storiesEl = document.getElementById("stories");
-      gsap.set(".vehicle-handoff", { autoAlpha: 0 });
-      gsap
-        .timeline({
+      // Fades `.vehicle-handoff` back out across the natural post-pin
+      // approach into PinnedStories. Three earlier approaches were tried
+      // and reverted after live testing, each confirmed broken by direct
+      // debug instrumentation, not assumption: (1) letting the pin's own
+      // onUpdate handle fade-out too, past progress===1 — it does keep
+      // firing for a while after `end`, but not reliably all the way to
+      // where the fade should finish, leaving `.vehicle-handoff` frozen
+      // partway; (2) a second ScrollTrigger with `start: "top top+=N"` — a
+      // custom pixel offset that GSAP resolves incorrectly for a trigger
+      // sharing the pin's own target element (thousands of px too early);
+      // (3) a second ScrollTrigger with `start: "bottom bottom"` — this
+      // string is itself ambiguous for an element that gets pinned later:
+      // it resolves to where the section *first* approaches from below
+      // (long before the pin even starts), not "after the pin ends", since
+      // both are geometrically valid "bottom = viewport bottom" moments and
+      // GSAP picks the earlier one. This version sidesteps all of that by
+      // reading the pin ScrollTrigger's own already-correct, fully-resolved
+      // `.end` pixel value directly off the trigger instance (`pinTl.
+      // scrollTrigger`) and building an independent trigger from that exact
+      // number — no relative-position string involved anywhere.
+      const pinST = pinTl.scrollTrigger!;
+      gsap.fromTo(
+        ".vehicle-handoff",
+        { autoAlpha: 1 },
+        {
+          autoAlpha: 0,
+          ease: "none",
+          // Without this, `gsap.fromTo`'s default `immediateRender:true`
+          // snaps `.vehicle-handoff` to autoAlpha:1 the instant this line
+          // runs (page load) — harmless while the section is off-screen,
+          // but incorrect and worth being explicit about rather than
+          // relying on that coincidence.
+          immediateRender: false,
           scrollTrigger: {
-            trigger: root,
-            start: () => `top top+=${window.innerHeight * 1.8 * 0.86}`,
-            endTrigger: storiesEl || root,
-            end: "top 80%",
+            start: () => pinST.end,
+            end: () => pinST.end + window.innerHeight * 0.55,
             scrub: true,
           },
-        })
-        .to(".vehicle-handoff", { autoAlpha: 1, duration: 0.15 })
-        .to(".vehicle-handoff", { autoAlpha: 1, duration: 0.7 })
-        .to(".vehicle-handoff", { autoAlpha: 0, duration: 0.15 });
+        },
+      );
     }, root);
 
     return () => ctx.revert();

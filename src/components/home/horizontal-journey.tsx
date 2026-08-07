@@ -108,41 +108,57 @@ export function HorizontalJourney() {
               const blur = gsap.utils.clamp(0, 3, v);
               track.style.filter = blur > 0.15 ? `blur(${blur.toFixed(2)}px)` : "";
             }
+
+            // Hand off into VehicleObjectJourney: dark wipe rises over the
+            // final ~6% of the pin. Fade-IN only here — this half is
+            // unchanged from the original, always-correct pattern.
+            if (progress >= 1) return;
+            const handoff = gsap.utils.clamp(0, 1, (progress - 0.94) / 0.06);
+            gsap.set(".journey-handoff", { autoAlpha: handoff });
           },
         },
       });
 
-      // `.journey-handoff`'s dark wipe used to be driven by the pin's own
-      // onUpdate (fading in during the final 6% of progress) plus a second,
-      // independent ScrollTrigger meant to fade it back out during the
-      // natural post-pin approach into VehicleObjectJourney. Confirmed live
-      // (via the same bug in VehicleObjectJourney's analogous handoff) that
-      // this is a genuine conflict: the pin's onUpdate keeps re-asserting its
-      // last computed value on every scroll tick even after its own progress
-      // has clamped to 1 past `end`, permanently overriding the second
-      // trigger's fade-out. Consolidated into ONE timeline (fade in -> hold
-      // -> fade out) so there's a single writer for this property, spanning
-      // from 94% into the pin's own progress through the natural approach
-      // into VehicleObjectJourney. `endTrigger` must be a real element
-      // reference, not selector text — `gsap.context()` scopes selector-text
-      // lookups (including ScrollTrigger's trigger/endTrigger strings) to
-      // this effect's own `section` root, so "#vehicle-motion" (a sibling,
-      // not a descendant) would otherwise silently fail to resolve.
-      const vehicleMotionEl = document.getElementById("vehicle-motion");
-      gsap.set(".journey-handoff", { autoAlpha: 0 });
-      gsap
-        .timeline({
+      // Fades `.journey-handoff` back out across the natural post-pin
+      // approach into VehicleObjectJourney. Three earlier approaches were
+      // tried and reverted after live testing, each confirmed broken by
+      // direct debug instrumentation, not assumption: (1) letting the pin's
+      // own onUpdate handle fade-out too, past progress===1 — it does keep
+      // firing for a while after `end`, but not reliably all the way to
+      // where the fade should finish, leaving `.journey-handoff` frozen
+      // partway; (2) a second ScrollTrigger with `start: "top top+=N"` — a
+      // custom pixel offset that GSAP resolves incorrectly for a trigger
+      // sharing the pin's own target element (thousands of px too early);
+      // (3) a second ScrollTrigger with `start: "bottom bottom"` — this
+      // string is itself ambiguous for an element that gets pinned later:
+      // it resolves to where the section *first* approaches from below
+      // (long before the pin even starts), not "after the pin ends", since
+      // both are geometrically valid "bottom = viewport bottom" moments and
+      // GSAP picks the earlier one. This version sidesteps all of that by
+      // reading the pin ScrollTrigger's own already-correct, fully-resolved
+      // `.end` pixel value directly off the trigger instance (`tween.
+      // scrollTrigger`) and building an independent trigger from that exact
+      // number — no relative-position string involved anywhere.
+      const journeyPinST = tween.scrollTrigger!;
+      gsap.fromTo(
+        ".journey-handoff",
+        { autoAlpha: 1 },
+        {
+          autoAlpha: 0,
+          ease: "none",
+          // Without this, `gsap.fromTo`'s default `immediateRender:true`
+          // snaps `.journey-handoff` to autoAlpha:1 the instant this line
+          // runs (page load) — harmless while the section is off-screen,
+          // but incorrect and worth being explicit about rather than
+          // relying on that coincidence.
+          immediateRender: false,
           scrollTrigger: {
-            trigger: section,
-            start: () => `top top+=${(getScroll() + window.innerHeight * 0.2) * 0.94}`,
-            endTrigger: vehicleMotionEl || section,
-            end: "top 80%",
+            start: () => journeyPinST.end,
+            end: () => journeyPinST.end + window.innerHeight * 0.55,
             scrub: true,
           },
-        })
-        .to(".journey-handoff", { autoAlpha: 1, duration: 0.15 })
-        .to(".journey-handoff", { autoAlpha: 1, duration: 0.7 })
-        .to(".journey-handoff", { autoAlpha: 0, duration: 0.15 });
+        },
+      );
 
       gsap.utils.toArray<HTMLElement>(".journey-slide-media").forEach((media) => {
         gsap.fromTo(

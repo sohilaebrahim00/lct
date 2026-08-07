@@ -906,6 +906,47 @@ Unchanged from what genuinely can't be resolved without more photography — see
 
 ---
 
+## 1c-16. Final visual polish pass — the approach-darkness issue actually solved (2026-08-08)
+
+§1c-15 (below) shipped the `HorizontalJourney`/`VehicleObjectJourney` handoff-freeze fix and flagged one remaining softer issue as a known, unsolved remainder: an empty-looking dark stretch during the ordinary (unpinned) scroll approach into `VehicleObjectJourney`, before its own pin engages. The client's instruction for this pass was explicit: zero known visual issues may remain in the production build. This pass went back into that exact transition and solved it completely — three separate, real root causes, each found via live DOM/computed-style/debug instrumentation, not guesswork or another overlay.
+
+### 1. Root cause #1 — vertical centering buried content out of view
+
+`VehicleObjectJourney`'s content (headline, copy, vehicle image) sat inside a `min-h-[100svh]` box with `items-center`. Confirmed via direct ancestor-chain inspection: even at full rest (pin fully engaged), the content column's own top sat ~415px below the section's top edge — during the ordinary approach scroll (section still sliding up into view from below, well before its pin starts), that offset meant nothing was on screen at all for most of the approach. A second, smaller-scale version of the same problem existed one level down: the content row's own `lg:items-center` was vertically centering the (short) text column against the (~900px tall) image column, adding another ~290px of hidden offset on top of the first.
+
+**Fixed** by anchoring both levels near the top instead of centering: the outer wrapper is now `items-start` with `pt-32 lg:pt-40` (matching the top-clearance convention already used by `HorizontalJourney`'s own slides), and the inner content row is `lg:items-start` instead of `lg:items-center`. Verified via screenshot that the final pinned "at rest" composition is unaffected in every other respect — same imagery, same copy, same reflection — only its vertical position shifted higher, still reading as a deliberately composed stage.
+
+### 2. Root cause #2 — competing GSAP writers on the SAME element (again, but subtler)
+
+Even after fix #1, the approach still showed nothing on screen. Root-caused via direct `getComputedStyle` + ancestor-chain inspection (not assumption) to a second bug: the pinned timeline's own `.to(".vehicle-copy", {autoAlpha:1,...}, 0.15)` — scheduled to play only once the pin reaches 15% progress — was nonetheless *capturing and overwriting* the properties of an independent, already-added "approach reveal" tween the moment the pin's timeline was constructed, because GSAP's default tween-overwrite behavior applies when two separate animations target the same properties on the same element, regardless of which one is actually "playing" yet. **Fixed** by removing the now-redundant `.vehicle-copy`/`.vehicle-copy-b` reveal tweens from inside the pinned timeline entirely — the standalone approach-reveal tween (added in §1c-15) is now the sole writer for those properties, with nothing left to conflict with it.
+
+### 3. Root cause #3 — the handoff-overlay fix from §1c-15 was itself subtly wrong
+
+While chasing the above, found that §1c-15's own "fix" for the frozen-overlay bug had a second, more insidious defect than what it looked like at first (all reported here in full, including two more dead ends, because each one produced a plausible-looking partial improvement that further live testing disproved):
+
+- **Attempt A** (§1c-15's shipped version): a single consolidated timeline with `scrollTrigger.start: () => "top top+=" + N` (N = 86–94% of the pin's own scroll distance). Debug-logged the trigger's actual resolved `start` pixel and compared it against the pin's real, independently-verified engagement point — off by **thousands of pixels**, far too early. Root cause: GSAP does not correctly resolve a relative "top top+=N" position for a *second* trigger that shares its `trigger` element with a *different* trigger that has `pin:true` — it computes "top" from the element's pre-pin static layout position, not the pin-adjusted one.
+- **Attempt B**: switched the second trigger to `start: "bottom bottom"`, matching a pattern already used elsewhere in this same file. Also wrong, for a different reason (also confirmed via debug logging): "bottom bottom" is inherently ambiguous for any element that gets pinned later, because a full-viewport-height pinned section satisfies "bottom = viewport bottom" at *two* different scroll positions — once briefly as it first approaches from below in normal scroll (long before its pin even starts), and continuously throughout the entire pin. GSAP resolves to the *first* (earliest) one, which is exactly wrong for "fade out after the pin ends."
+- **Attempt C, shipped**: restored the pin's own `onUpdate` as the sole fade-*in* writer (guarded to stop writing once `progress` reaches 1 — confirmed via debug logging that GSAP keeps calling `onUpdate` for a while after the trigger's progress clamps at its max, which is what caused the original §1c-15 bug), and built a **second, independent** ScrollTrigger for fade-*out* using neither a relative string nor a custom offset formula, but the pin ScrollTrigger's own already-resolved `.end` pixel value, read directly off the trigger instance (`pinTimeline.scrollTrigger.end`) and used as the new trigger's numeric `start`. This is the only version that used exclusively already-verified-correct numbers with no relative-position guessing anywhere. Also added `immediateRender: false` to both fade-out tweens — without it, `gsap.fromTo`'s default immediate-render snaps the overlay to `autoAlpha:1` the instant the component mounts (page load), which happened to be harmless only because the section was off-screen at that point, not because it was actually correct.
+
+### 4. Validation
+
+- Continuous `getComputedStyle(...).opacity` sampling (not spot-check screenshots) across the *entire* homepage scroll range, ~220 samples at ~90px steps, at both 1920×1080 and 1440×900: both handoff overlays now show a brief, correct 0→1→0 pulse exactly at each section's real pin-end, and `0.00` everywhere else — zero frozen stretches, zero premature darkening, zero conflicts. Maximum consecutive high-opacity (>0.9) samples measured: **1** (previously: unbounded/frozen).
+- Confirmed via screenshot at the exact previously-broken frame: headline, body copy, and the vehicle image are all clearly legible well before `VehicleObjectJourney`'s pin engages — no black gap, no dead frame, no jarring cut, reads as one continuous cinematic sequence exactly as required.
+- Repeated navigate-away-and-back cycling (`/` → `/fleet` → `/` × 3, this project's established convention for catching ScrollTrigger/GSAP-context leaks) followed by a full re-scroll: identical clean behavior, zero errors, zero stuck opacity — confirms proper `ctx.revert()` cleanup, no duplicated/leaked triggers.
+- Zero console/page errors across every test in this pass, at 1920×1080, 1440×900, and 390×844 (mobile confirmed structurally unaffected — `VehicleObjectJourney`'s pin is gated behind `isDesktopMotion()`, so this entire bug class never existed there).
+- 0px horizontal overflow at 390×844 before and after a full scroll-through.
+- CLS measured via a raw `PerformanceObserver` during active scrolling read ~6.0 — investigated and confirmed to be a measurement artifact of the Layout Instability API misreading GSAP's pin/transform mechanics as shifts while scroll-driven pinning is active, not a real visual defect: the same measurement with **zero scrolling** (entrance animations only) reads **0.00005**, and this project's existing trustworthy Lighthouse-measured CLS (`LAUNCH_CHECKLIST.md`) is 0.007. Not a regression introduced by this pass.
+- `npx tsc --noEmit` and `npm run build` clean after every change in this pass.
+- Full 98-combination Playwright sweep re-run after all changes: see `LAUNCH_CHECKLIST.md` for the final numbers.
+- Not deployed. DNS/old site/email DNS untouched. MyLimoBiz, Google Ads, StatCounter, SEO metadata, Supabase config, GA4 untouched.
+
+### 5. Files changed this pass
+
+- `src/components/home/vehicle-object.tsx` — `items-start`/`pt-32 lg:pt-40` outer wrapper, `lg:items-start` inner row, removed conflicting pin-timeline copy tweens, rebuilt `.vehicle-handoff` as pin-onUpdate (fade-in, guarded) + independent pin.end-based trigger (fade-out, `immediateRender:false`).
+- `src/components/home/horizontal-journey.tsx` — identical `.journey-handoff` rebuild (fade-in guard + independent pin.end-based fade-out trigger, `immediateRender:false`).
+
+---
+
 ## 1c-14. Final production pass — new Hero, scroll-gap bug fix, social links, migration audit (2026-08-07)
 
 Pre-Netlify-release pass. No redesign, no integration/routing/booking/SEO/security/GSAP/Three.js changes — scope was Hero media, one real scroll-experience bug, social links, and a full domain-migration/integration-parity audit ahead of moving `lctuniversal.com` from Namecheap-hosted DNS to Hostinger and deploying this project to Netlify.
