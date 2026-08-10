@@ -1080,6 +1080,18 @@ Files changed: `src/lib/image-map.ts` (`fleetFirstClassSedan` final image + posi
 
 ---
 
+## 1c-31. Approved-asset-folder audit + a real dist/ staleness bug caught (2026-08-10)
+
+Client asked that all vehicle/fleet image assignments be sourced only from `dist/assets/official` going forward. Important nuance surfaced and explained rather than followed blindly: `dist/` is Vite's build output — it is generated *from* `public/assets/official` on every `npm run build`, not the other way around, and gets fully overwritten by the very build this task ends with. Confirmed via `comm` diff that `dist/assets/official` contained zero files not already in `public/assets/official` — no separate/curated pool existed to discover, so no image reassignment was actually needed; every `src` in `image-map.ts` already traced back to a real, previously-inspected client photo, never a stock/AI image.
+
+That diff also surfaced a genuine, currently-live bug: `dist/assets/official` was stale, missing two files that ARE actively referenced in current source (`sedan-chauffeur-crop.jpg` — Sedan chapter, and `chauffeur-corporate-portrait-v2.jpg` — used in 4 placements including the /corporate hero). Confirmed live, not assumed: screenshotted `/corporate` before touching anything and its hero rendered with no image at all — genuinely broken in the then-current preview, not hypothetical. Root cause: `dist/` reflected a build from before those two files were added, and nothing had rebuilt it since. Fixed by rebuilding (`npm run build`, which is a strict resync of `dist/` from `public/`), then re-screenshotted `/corporate` to confirm the chauffeur portrait now renders correctly.
+
+Re-verified after the rebuild: `/corporate` hero, Services → Group Transportation (real full-size motorcoach, correctly labeled), `/airport` hero (DFW monument sign), and Fleet's Sedan + First Class Sedan chapters (both correct, First Class Sedan still `first-class-sedan.jpeg` / 2 passengers / 2 luggage / $150/hour, unchanged). All 7 Fleet chapters' image `src` + text re-confirmed unchanged except where already noted. `/rates` and `/book` (exactly 1 MyLimoBiz iframe) re-confirmed unaffected. Grepped all of `src/` for `C:\Users` / `C:/Users` — zero matches, confirming no Windows filesystem path has ever been placed in application code (every reference is the web-relative `/assets/official/...` form). Full 17-route × 4-breakpoint (360/375/390/430) overflow/console-error sweep: 0 overflow, 0 errors. A separate HTTP-status-based check (distinct from the DOM-`complete`-based check, which flags below-the-fold lazy images as false positives — a known artifact from earlier this session) across 10 key routes confirmed 0 real broken image responses. `npx tsc --noEmit` and `npm run build` both clean.
+
+No files changed this round — the only "fix" was rebuilding to resync `dist/` with the already-correct `public/` source, which the task's own final step (`npm run build`) would have done regardless. Documented here because the staleness was a real, currently-observable bug at the moment it was checked, not a false alarm.
+
+---
+
 ## 1c-20. Trust badge premium placement + transparent logo derivatives (2026-08-08)
 
 Follow-up to §1c-19: the client supplied the real BBB/GNET/NLA files (as `logo1.png`/`logo2.png`/`logo3.png` — found in `dist/assets/`, the build-output folder, which gets wiped on every `npm run build`; copied to a safe location immediately before doing anything else). Mapped by direct visual inspection, not filename: logo1 → GNET, logo2 → NLA, logo3 → BBB.
