@@ -6,7 +6,7 @@ import { RouteTransition } from "@/components/route-transition";
 import { Cursor } from "@/components/luxury/cursor";
 import { MyLimoBizWidgetHost } from "@/components/booking/mylimobiz-widget";
 import { Analytics } from "@/components/analytics";
-import { COMPANY, CONTACT, RATES } from "@/lib/site-data";
+import { COMPANY, CONTACT } from "@/lib/site-data";
 
 function NotFoundComponent() {
   // A static-hosted SPA fallback (see public/.htaccess) always serves this
@@ -136,11 +136,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // instead (fires before JS parses, and avoids fetching the exact
       // same Google Fonts CSS twice — verified this was happening: this
       // block used to duplicate index.html's now-corrected static link).
-      {
-        rel: "preload",
-        as: "image",
-        href: "/assets/official/group-coach-bus.jpg",
-      },
+      //
+      // A sitewide `rel="preload"` for group-coach-bus.jpg used to live
+      // here — a leftover from when that file was the Hero image, before
+      // the 2026-08-07 swap to hero-fleet-lineup.jpg (see image-map.ts).
+      // It was never updated, so every one of the 17 routes was
+      // force-fetching a large image at high priority even on the 16
+      // routes that never render it at all. Removed 2026-08-08
+      // (mobile-first performance pass) — the actual Hero image now has
+      // its own correct, breakpoint-specific preload in index.tsx.
     ],
     scripts: [
       {
@@ -176,7 +180,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             opens: "00:00",
             closes: "23:59",
           },
-          priceRange: `${RATES.sedanHourlyFrom} – ${RATES.sprinterHourlyFrom}`,
+          // Symbolic tier indicator, not a literal quoted figure — the old
+          // site's fixed "$100/hour" style rates were confirmed inaccurate
+          // against the live booking system (2026-08-08) and dropped
+          // site-wide; schema.org's priceRange accepts this "$"-style
+          // symbolic form specifically for cases like this.
+          priceRange: "$$$",
           sameAs: [
             CONTACT.facebookUrl,
             CONTACT.instagramUrl,

@@ -1,4 +1,4 @@
-import { ReactNode, useLayoutEffect, useRef } from "react";
+import { ReactNode, useLayoutEffect, useRef, type CSSProperties } from "react";
 import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
 import { FloatingActions } from "./floating-actions";
@@ -28,13 +28,17 @@ export function PageHero({
   description,
   image,
   imagePosition,
+  imagePositionMobile,
   imageEdge = "left",
 }: {
   eyebrow: string;
   title: string;
   description?: string;
   image?: string;
+  /** Desktop (`md:` and up) object-position. */
   imagePosition?: string;
+  /** Below-`md` object-position — falls back to `imagePosition` when omitted, never a bare default center crop. */
+  imagePositionMobile?: string;
   imageEdge?: PageHeroEdge;
 }) {
   const rootRef = useRef<HTMLElement>(null);
@@ -95,8 +99,15 @@ export function PageHero({
           <img
             src={image}
             alt=""
-            className="pagehero-media absolute inset-0 h-full w-full object-cover opacity-70"
-            style={imagePosition ? { objectPosition: imagePosition } : undefined}
+            className="pagehero-media absolute inset-0 h-full w-full object-cover opacity-70 [object-position:var(--pagehero-pos-m)] md:[object-position:var(--pagehero-pos-d)]"
+            style={
+              imagePosition || imagePositionMobile
+                ? ({
+                    "--pagehero-pos-m": imagePositionMobile ?? imagePosition,
+                    "--pagehero-pos-d": imagePosition ?? imagePositionMobile,
+                  } as CSSProperties)
+                : undefined
+            }
           />
           {/* Localized: a soft spotlight behind the centered title/copy keeps
               text readable without darkening the whole photo — the edges

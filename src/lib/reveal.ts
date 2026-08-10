@@ -20,12 +20,18 @@ const CLIP_FROM: Record<Exclude<Edge, "diagonal" | "diagonal-reverse">, string> 
   down: "inset(0% 0% 100% 0%)",
 };
 
-const STAGGER_OFFSET: Record<Direction, { x?: number; y?: number }> = {
-  left: { x: -44 },
-  right: { x: 44 },
-  up: { y: 44 },
-  down: { y: -44 },
-};
+function staggerOffset(from: Direction, distance: number): { x?: number; y?: number } {
+  switch (from) {
+    case "left":
+      return { x: -distance };
+    case "right":
+      return { x: distance };
+    case "up":
+      return { y: distance };
+    case "down":
+      return { y: -distance };
+  }
+}
 
 function hasTarget(t: Target) {
   if (!t) return false;
@@ -126,11 +132,11 @@ export function revealClipImage(
 /** Directional grid/list stagger — replaces the plain `y:48` fade-up used everywhere. */
 export function revealStagger(
   els: Target,
-  opts: { from?: Direction; amount?: number; start?: string; duration?: number; trigger?: Target } = {},
+  opts: { from?: Direction; amount?: number; start?: string; duration?: number; trigger?: Target; distance?: number } = {},
 ) {
   if (!hasTarget(els) || prefersReducedMotion()) return;
   const { gsap } = ensureGsap();
-  const offset = STAGGER_OFFSET[opts.from ?? "up"];
+  const offset = staggerOffset(opts.from ?? "up", opts.distance ?? 44);
   // ScrollTrigger's `trigger` must be a single element/selector, not an array —
   // fall back to the first item when `els` is a list and no explicit trigger given.
   const trigger =

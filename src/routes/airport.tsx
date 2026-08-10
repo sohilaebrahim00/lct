@@ -87,6 +87,8 @@ function Airport() {
         title="The airport, without the airport."
         description={`Curbside pickup to full meet-and-greet at baggage claim across ${CONTACT.serviceRegionShort}.`}
         image={hero.src}
+        imagePosition={hero.objectPositionDesktop}
+        imagePositionMobile={hero.objectPositionMobile}
       />
 
       <div className="relative z-[5] mx-auto -mt-8 flex max-w-[var(--container-max)] justify-center px-[var(--page-gutter)] pb-4">
@@ -127,10 +129,10 @@ function Airport() {
         <div className="mx-auto max-w-3xl px-[var(--page-gutter)]">
           <SectionHeading
             align="center"
-            eyebrow="Airport Reservation"
+            eyebrow="Flight Details"
             title={
               <>
-                Reserve your <span className="italic text-gold-gradient">airport transfer.</span>
+                Send your <span className="italic text-gold-gradient">flight details.</span>
               </>
             }
           />

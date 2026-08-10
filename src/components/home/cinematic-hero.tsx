@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { IMAGES } from "@/lib/image-map";
@@ -11,6 +11,7 @@ import heroDrivingVideo from "@/assets/video/hero-driving.mp4";
 export function CinematicHero() {
   const rootRef = useRef<HTMLElement>(null);
   const hero = IMAGES.hero;
+  const heroMobile = IMAGES.heroMobile;
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -156,14 +157,26 @@ export function CinematicHero() {
       </div>
 
       <div className="hero-media absolute inset-0" style={{ perspective: "1400px" }}>
-        <img
-          src={hero.src}
-          alt={hero.alt}
-          className="hero-media-visual absolute inset-0 h-full w-full object-cover"
-          style={{ objectPosition: hero.objectPositionDesktop }}
-          fetchPriority="high"
-          decoding="async"
-        />
+        <picture>
+          {/* Below `md`: a real cropped derivative, not just a repositioned
+              desktop frame — see `heroMobile` in image-map.ts for why a
+              position tweak alone can't fix this source on a portrait
+              viewport. */}
+          <source media="(max-width: 767px)" srcSet={heroMobile.src} />
+          <img
+            src={hero.src}
+            alt={hero.alt}
+            className="hero-media-visual absolute inset-0 h-full w-full object-cover [object-position:var(--hero-pos-m)] md:[object-position:var(--hero-pos-d)]"
+            style={
+              {
+                "--hero-pos-m": heroMobile.objectPositionMobile,
+                "--hero-pos-d": hero.objectPositionDesktop,
+              } as CSSProperties
+            }
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
       </div>
 
       <div

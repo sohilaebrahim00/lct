@@ -28,6 +28,7 @@ function Reviews() {
         description="LCT Universal only publishes verified reviews from our own clients. As we collect and verify them, they will appear on this page."
         image={hero.src}
         imagePosition={hero.objectPositionDesktop}
+        imagePositionMobile={hero.objectPositionMobile}
       />
       <section className="mx-auto max-w-4xl px-6 pb-24 lg:px-10">
         <div className="luxe-card rounded-lg p-10 text-center">

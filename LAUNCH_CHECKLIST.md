@@ -2,7 +2,23 @@
 
 Consolidated status as of the pre-launch QC pass (2026-08-02). Originally written after Phase 3 (production hardening: security → SEO → tracking → performance → Hostinger deployment). Phase 4 (interior-page visual elevation) and a subsequent pre-launch QC pass (cursor, images, CTAs, responsive/keyboard/reduced-motion QA, integration regression — full record in `PROJECT_SPEC.md` §1c-5 and §1c-6) have both since completed. The sections below are updated in place rather than duplicated.
 
-## ✅ Done and verified — final visual polish pass (2026-08-08, latest, see `PROJECT_SPEC.md` §1c-16)
+## ✅ Done and verified — final client revision + old-site parity pass (2026-08-08, latest, see `PROJECT_SPEC.md` §1c-17 and `OLD_SITE_PARITY_AUDIT.md`)
+
+- [x] Fleet corrected against live MyLimoBiz verification (not guessed): Mini Coach (39 pax) and Executive Coach (56 pax) added/corrected, matching the client's instructions exactly. Old "Executive Coach 37–50 pax" mislabeling fixed — that vehicle is a Mini Coach.
+- [x] All hardcoded fixed pricing ($100/hr, $120/hr, $200/hr, $120 airport) removed sitewide and from JSON-LD, replaced with the client's own suggested safe wording — confirmed via a real live (non-submitted) MyLimoBiz quote that pricing is genuinely trip-dynamic.
+- [x] New pages: `/rates`, `/zero-tolerance`, `/cancellation-policy` — all built, linked from footer, verified real content from the old live site (not invented).
+- [x] `terms.tsx` gained Dallas Transportation-for-Hire compliance language, complaint contacts, drug-free workplace statement, ADA line — all verified from the old site.
+- [x] Group Transportation image swapped to the real client-supplied photo; produced a genuine crop (not AI removal) to exclude a distracting person, verified sharp on both desktop and mobile.
+- [x] `OLD_SITE_PARITY_AUDIT.md` created — full feature-parity table + Dallas compliance checklist, based on a real live audit of `lctuniversal.com`, not assumed content.
+- [x] BBB/GNET/NLA trust section: confirmed via live audit that **no real badge assets exist anywhere** (old site or this project) — not built with fabricated placeholders. Flagged as the top open item pending client-supplied assets.
+- [x] `npm audit fix` (non-force) applied: 6 → 2 vulnerabilities, both dev-server-only (esbuild/vite), not shipped in production build.
+- [x] QA sweep expanded to 17 routes × 11 breakpoints (187 combinations) covering every client-specified breakpoint — 0 real problems (6 flagged results were a flaky batch artifact, confirmed via isolated re-test).
+- [x] Mobile art-direction spot-checked via real wheel-scroll at all 4 required breakpoints (390×844, 375×812, 430×932, 360×800) on every new/changed page.
+- [x] MyLimoBiz autocomplete and social links re-verified working after all changes.
+- [x] `npx tsc --noEmit` and `npm run build` clean after every change in this pass.
+- Not deployed. DNS/old site/email DNS untouched. MyLimoBiz, Google Ads, StatCounter, SEO metadata, Supabase config, GA4, GSAP/ScrollTrigger, Three.js gating untouched.
+
+## ✅ Done and verified — final visual polish pass (2026-08-08, earlier, see `PROJECT_SPEC.md` §1c-16)
 
 - [x] The approach-darkness issue flagged as a "known remainder" at the end of the previous pass was tracked down to root cause and fully solved — not masked. Three real, distinct bugs, each confirmed via live debug instrumentation (not guessed): (1) `items-center` vertical centering (two nested levels) burying `VehicleObjectJourney`'s content ~700px below the visible area during its approach scroll; (2) a redundant tween inside the pinned timeline silently overwriting an already-correct standalone reveal tween via GSAP's default overwrite behavior; (3) the handoff-overlay fix shipped in the previous pass was itself subtly wrong — two further relative-position approaches (`"top top+=N"`, then `"bottom bottom"`) were tried and both proven incorrect via debug logging before landing on a fully self-contained fix using only the pin ScrollTrigger's own already-resolved `.end` pixel value.
 - [x] Verified via continuous `getComputedStyle` opacity sampling (~220 samples across the full homepage scroll range, not spot-check screenshots) at 1920×1080 and 1440×900: both section handoffs now show a brief, correct fade-pulse exactly at each pin's real end, with zero frozen stretches and zero premature darkening — maximum consecutive high-opacity sample run measured: 1.

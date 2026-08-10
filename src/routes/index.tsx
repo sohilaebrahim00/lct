@@ -8,6 +8,7 @@ import { ServiceAvailability } from "@/components/home/service-availability";
 import { HorizontalJourney } from "@/components/home/horizontal-journey";
 import { PinnedStories } from "@/components/home/pinned-stories";
 import { VehicleObjectJourney } from "@/components/home/vehicle-object";
+import { TrustStrip } from "@/components/home/trust-strip";
 import { FinalCta } from "@/components/home/booking-experience";
 import { IMAGES } from "@/lib/image-map";
 import { CONTACT } from "@/lib/site-data";
@@ -25,7 +26,23 @@ export const Route = createFileRoute("/")({
       ...meta,
       links: [
         ...meta.links,
-        { rel: "preload", as: "image", href: IMAGES.hero.src, fetchPriority: "high" as never },
+        // Split by breakpoint so mobile never pays to download the desktop
+        // hero image it will never display (and vice versa) — matching the
+        // `<picture>` source swap in CinematicHero.
+        {
+          rel: "preload",
+          as: "image",
+          href: IMAGES.heroMobile.src,
+          media: "(max-width: 767px)",
+          fetchPriority: "high" as never,
+        },
+        {
+          rel: "preload",
+          as: "image",
+          href: IMAGES.hero.src,
+          media: "(min-width: 768px)",
+          fetchPriority: "high" as never,
+        },
       ],
     };
   },
@@ -49,6 +66,7 @@ function Home() {
     <SiteLayout>
       <SmoothScroll />
       <CinematicHero />
+      <TrustStrip />
       <ValueEditorial />
       <ServiceAvailability />
       <HorizontalJourney />

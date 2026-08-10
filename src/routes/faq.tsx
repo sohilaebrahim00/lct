@@ -98,7 +98,7 @@ const CATEGORIES: { category: string; items: FaqItem[] }[] = [
       },
       {
         q: "How do cancellations work?",
-        a: "Cancellation policies vary by service tier. Your reservation confirmation notes the applicable window.",
+        a: "Cancellation windows vary by service type — see our full Cancellation Policy page for exact windows and fees for sedans & SUVs, airport transfers, and hourly & event services.",
       },
       {
         q: "Where do you operate?",

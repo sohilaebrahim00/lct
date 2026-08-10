@@ -104,6 +104,8 @@ function Contact() {
         title="Speak with our concierge."
         description="A live specialist is available 24 hours a day, seven days a week. Reach us by phone, WhatsApp, email — or complete the form below."
         image={hero.src}
+        imagePosition={hero.objectPositionDesktop}
+        imagePositionMobile={hero.objectPositionMobile}
       />
 
       {/* Primary conversion action — instant online booking via MyLimoBiz.
@@ -211,7 +213,7 @@ function Contact() {
               icon="clock"
               title="Hours"
               line1="Dispatch 24 hours · 7 days"
-              line2={`Management ${CONTACT.managementHours}`}
+              line2={`Management ${CONTACT.managementHours} · ${CONTACT.managementClosed}`}
             />
             <div className="glass rounded-sm p-6">
               <div className="eyebrow text-[0.6rem]">Follow Us</div>

@@ -8,7 +8,7 @@ import { LeadForm } from "@/components/lead-form";
 import { ensureGsap, prefersReducedMotion } from "@/lib/motion";
 import { pageMeta } from "@/lib/seo";
 
-const heroImg = IMAGES.events.src;
+const heroImg = IMAGES.events;
 
 export const Route = createFileRoute("/events")({
   head: () =>
@@ -84,7 +84,9 @@ function Events() {
         eyebrow="Events & Weddings"
         title="Choreographed to the minute."
         description="Guest shuttles to staged departures — LCT designs the plan around your run of show."
-        image={heroImg}
+        image={heroImg.src}
+        imagePosition={heroImg.objectPositionDesktop}
+        imagePositionMobile={heroImg.objectPositionMobile}
       />
 
       {/* Primary conversion action — a single-vehicle event ride can be
@@ -204,8 +206,11 @@ function Events() {
                   colSpan: 1,
                   options: [
                     "Executive Sedan",
+                    "Executive SUV",
                     "Luxury SUV",
-                    "Sprinter",
+                    "Executive Sprinter",
+                    "Mini Coach",
+                    "Motor Coach",
                     "Mixed Fleet",
                     "No preference",
                   ],

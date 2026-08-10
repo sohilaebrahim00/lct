@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { IMAGES } from "@/lib/image-map";
+import { FLEET_VEHICLES } from "@/lib/site-data";
 import { ensureGsap, isDesktopMotion, prefersReducedMotion } from "@/lib/motion";
 
 /**
@@ -9,6 +10,10 @@ import { ensureGsap, isDesktopMotion, prefersReducedMotion } from "@/lib/motion"
 export function VehicleObjectJourney() {
   const rootRef = useRef<HTMLElement>(null);
   const vehicle = IMAGES.fleetSuv;
+  // 2026-08-08 fleet/pricing audit: this line previously hardcoded a stale,
+  // never-verified "From $120/hour" that didn't match any source of truth.
+  // Pulled from FLEET_VEHICLES now so it can't drift out of sync again.
+  const suvData = FLEET_VEHICLES.find((v) => v.id === "suv")!;
 
   useLayoutEffect(() => {
     const root = rootRef.current;
@@ -191,7 +196,7 @@ export function VehicleObjectJourney() {
             </p>
             <div className="mt-8 h-px w-20 bg-champagne/50" />
             <p className="mt-4 text-xs uppercase tracking-[0.24em] text-champagne/75">
-              Executive SUV · 6 passengers · From $120/hour
+              Executive SUV · {suvData.pax} passengers · {suvData.priceLabel}
             </p>
           </div>
 

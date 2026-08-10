@@ -33,14 +33,72 @@ export const IMAGES = {
     notes:
       "Changed 2026-08-07 (was group-coach-bus.jpg): client-supplied hero photo — the full branded fleet (5 vehicles + the coach bus) lined up together, an even stronger 'One Fleet' statement than the bus alone. Source: WhatsApp Image 2026-08-07 at 4.18.45 PM.jpeg (client Downloads folder). Symmetric composition with open sky across the top third, giving the hero's text overlay clean room regardless of crop. group-coach-bus.jpg remains in active use elsewhere (fleetCoach*/groupCoachStory) — only the Hero placement changed.",
   },
+  /**
+   * Mobile-specific Hero derivative (2026-08-08, mobile-first pass). The
+   * desktop `hero` source is a wide 5-vehicle lineup (1535×1024, ~3:2) shot
+   * for a landscape hero container — on a narrow portrait phone viewport,
+   * `object-fit: cover` against that source is height-bound (verified via
+   * the actual cover-scale-factor math, not assumed), meaning the FULL
+   * vertical extent of the source — including its top third of empty sky —
+   * always renders no matter what `objectPosition` is set to; there is no
+   * vertical crop headroom to shift with a position value alone. A real
+   * rectangular crop was the only fix (the same category of problem the
+   * Sedan fleet photo and `groupCoachStoryCropped` solved before). This
+   * derivative (`sharp .extract({left:520,top:280,width:850,height:744})`)
+   * trims almost all of the sky and tightens onto 4 of the 5 vehicles plus
+   * the branded coach, giving mobile real "vehicle-forward" hero material
+   * instead of a mostly-sky frame with tiny cars at the bottom.
+   */
+  heroMobile: {
+    src: "/assets/official/hero-fleet-lineup-mobile.jpg",
+    alt: "LCT Universal fleet — sedan, SUVs, and branded coach bus",
+    objectPositionDesktop: "50% 50%",
+    objectPositionMobile: "48% 42%",
+    aspectRatio: "850 / 744",
+  },
   fleetSedan: {
-    src: "/assets/official/sedan-virgin-hotels.jpg",
-    alt: "Executive Sedan — Mercedes-Benz S-Class outside a Dallas hotel",
-    objectPositionDesktop: "50% 45%",
-    objectPositionMobile: "50% 40%",
-    aspectRatio: "3 / 2",
+    src: "/assets/official/sedan-chauffeur-crop.jpg",
+    alt: "Executive Sedan — chauffeur beside a Mercedes-Benz S-Class in downtown Dallas",
+    objectPositionDesktop: "38% 55%",
+    objectPositionMobile: "32% 52%",
+    aspectRatio: "4 / 3",
     notes:
-      "Added 2026-08-07 (media refresh pass), source IMG_0680.HEIC — sharper front 3/4 shot with a cleaner, more premium backdrop (Virgin Hotels valet) than the previous hero-sclass-chauffeur.jpg, which had a busier street/pickup-truck background. That file is retained on disk but no longer referenced.",
+      "Changed 2026-08-08 (final production cleanup pass). Two prior real photos were tried and rejected before this one: `sedan-virgin-hotels.jpg` had a second, differently-colored S-Class in the same frame, ambiguous about which car was being advertised; a tight rectangular re-crop of just the black car (`sharp .extract` down to 880px wide) technically excluded the second car but — at the Fleet Sedan chapter's ultra-wide 21:9 full-bleed container — a source that narrow has to scale up so much to cover the container's width that only a ~18% vertical sliver of it ever renders, reducing the shot to an extreme hood/grille close-up that no longer clearly read as 'a sedan' at a glance. `hero-sclass-chauffeur.jpg` (same verified S-Class, different real photo, 3/4 angle showing the full car body) was tried next, but its far-left edge had a seated bystander who — same container-math issue — can never be cropped out via `objectPosition` alone since the container always needs this image's full width. Fixed with a real rectangular crop of THIS photo (`sedan-chauffeur-crop.jpg`, `sharp .extract({left:220,width:1780})`) that excludes the bystander while staying wide enough (1780px) to avoid the earlier over-zoom problem — verified by checking the actual rendered container math (only ~43% of source height gets cropped away here, vs. ~82% for the narrower attempt) and by direct visual inspection of the final crop before use.",
+  },
+  fleetFirstClassSedan: {
+    // FINAL 2026-08-09 — client-supplied photo, not a project-derived crop.
+    // Delivered as a chat attachment (no tool available can persist inline
+    // chat image bytes to disk — that limitation was surfaced explicitly
+    // rather than worked around), then saved to disk by the client directly.
+    // Two path attempts (`first-class-sedan.jpg`, then a claimed second save
+    // to the same name) genuinely did not exist on disk — verified via three
+    // independent methods (`ls`, a `sharp` read, and the `Read` tool) each
+    // time before saying so, plus a search across all three LCT project
+    // copies on this machine and the full user profile, specifically to
+    // avoid a false "still broken" report if the file truly was there. The
+    // real file landed as `first-class-sedan.jpeg` (`.jpeg`, not `.jpg`) —
+    // confirmed via `sharp` metadata (1560×878 after EXIF auto-orientation)
+    // and a direct visual read that it matches the attached photo exactly
+    // before wiring it in. Used as supplied — not re-cropped into a new
+    // derivative — per explicit client instruction to art-direct via
+    // `objectPosition` only. `fleetSedan` (Executive Sedan) is a different
+    // class/photo and was not touched.
+    src: "/assets/official/first-class-sedan.jpeg",
+    alt: "First Class Sedan — Mercedes-Benz S-Class, front three-quarter view",
+    // Source is ~16:9 (1560×878), almost exactly matching this chapter's own
+    // mobile aspect (16/9) — mobile therefore needs virtually no cropping in
+    // either dimension, confirmed by computing the actual `cover` scale
+    // factors, not assumed. At the wider desktop aspect (21/9) the source is
+    // width-bound (full width always renders — checked, so horizontal
+    // position is moot there), with a real vertical crop window; 56% keeps
+    // the grille/headlight band centered rather than the sky/roofline above
+    // it or the pavement below — confirmed by rendering the actual scaled
+    // crop before choosing this value, not by eyeballing the raw photo.
+    objectPositionDesktop: "50% 56%",
+    objectPositionMobile: "50% 50%",
+    aspectRatio: "1560 / 878",
+    notes:
+      "First Class Sedan class published 2026-08-08 (verified live via MyLimoBiz — a 2-passenger sedan-tier class distinct from the standard 3-passenger Sedan). Image finalized 2026-08-09 to the client's own supplied photo (see comment above).",
   },
   fleetSuv: {
     src: "/assets/official/suv-escalade-corporate.jpg",
@@ -49,7 +107,16 @@ export const IMAGES = {
     objectPositionMobile: "55% 38%",
     aspectRatio: "3 / 2",
     notes:
-      "Added 2026-08-07, source IMG_8626.JPEG — front 3/4 in golden-hour light against a clean corporate-park backdrop, stronger than the previous fleet-escalade.jpg (flatter light, rear 3/4 angle). That file is retained on disk but no longer referenced.",
+      "Added 2026-08-07, source IMG_8626.JPEG — front 3/4 in golden-hour light against a clean corporate-park backdrop, stronger than fleet-escalade.jpg's flatter-light rear 3/4 angle. That file was retained unused until 2026-08-08, when it was activated as `fleetLuxurySuv` (see below) — the two SUV classes share one verified vehicle but never share the same photo.",
+  },
+  fleetLuxurySuv: {
+    src: "/assets/official/fleet-escalade.jpg",
+    alt: "Luxury SUV — Cadillac Escalade, rear three-quarter view",
+    objectPositionDesktop: "50% 48%",
+    objectPositionMobile: "55% 45%",
+    aspectRatio: "3 / 2",
+    notes:
+      "Activated 2026-08-08 for the newly-published Luxury SUV class (verified live 2026-08-08 via MyLimoBiz — a second, higher-tier 6-passenger SUV class alongside the standard SUV). Per explicit client instruction: no distinct Luxury SUV vehicle photo exists in the project, so the same verified Escalade is used, but in its OTHER real photograph (rear 3/4, previously unreferenced) rather than reusing `fleetSuv`'s exact front 3/4 crop — the two classes never render the identical image.",
   },
   fleetSprinter: {
     src: "/assets/official/sprinter-exterior.jpg",
@@ -71,30 +138,39 @@ export const IMAGES = {
   },
   fleetCoach: {
     src: "/assets/official/coach-airport-arrival.jpg",
-    alt: "LCT Universal executive coach bus with chauffeur boarding at a covered arrival area",
+    alt: "LCT Universal Executive Mini Coach with chauffeur boarding at a covered arrival area",
     objectPositionDesktop: "40% 50%",
     objectPositionMobile: "45% 45%",
     aspectRatio: "3 / 2",
     notes:
-      "Added 2026-08-07, source IMG_1156.HEIC — sharp branded livery shot at a covered pickup area, replacing the group-coach-bus.jpg crop previously used here (that photo remains in use for `hero` and `groupCoachStory`). Used by the /fleet page Coach chapter.",
+      "Added 2026-08-07, source IMG_1156.HEIC — sharp branded livery shot at a covered pickup area, replacing the group-coach-bus.jpg crop previously used here (that photo remains in use for `hero` and `groupCoachStory`). Used by the /fleet page's Executive Mini Coach chapter. RECLASSIFIED 2026-08-08: this is a single-rear-axle, cutaway-chassis shuttle bus (visually confirmed) — a Mini Coach, not a full-size motorcoach. Previously mislabeled 'Executive Coach' at 37–50 passengers; corrected per client instruction (see FLEET_VEHICLES in site-data.ts).",
   },
   fleetCoachJourney: {
     src: "/assets/official/coach-sideprofile-day.jpg",
-    alt: "LCT Universal executive coach bus, full side profile in daylight",
+    alt: "LCT Universal Executive Mini Coach, full side profile in daylight",
     objectPositionDesktop: "50% 45%",
     objectPositionMobile: "50% 42%",
     aspectRatio: "3 / 2",
     notes:
-      "Added 2026-08-07, source IMG_1500.HEIC — a second, distinct new coach photograph (not a crop of the hero photo) for the HorizontalJourney fleet slide, so the site now has 3 genuinely different bus photographs rather than 3 crops of one.",
+      "Added 2026-08-07, source IMG_1500.HEIC — a second, distinct new coach photograph (not a crop of the hero photo) for the HorizontalJourney fleet slide, so the site now has 3 genuinely different bus photographs rather than 3 crops of one. RECLASSIFIED 2026-08-08: same vehicle as `fleetCoach` — a Mini Coach, not a full-size motorcoach. See that key's notes.",
   },
   groupCoachStory: {
     src: "/assets/official/group-coach-bus.jpg",
-    alt: "LCT Universal chauffeur beside the executive coach bus for group transportation",
+    alt: "LCT Universal chauffeur beside the full-size executive motorcoach for group transportation",
     objectPositionDesktop: "38% 42%",
     objectPositionMobile: "45% 40%",
     aspectRatio: "3 / 2",
     notes:
-      "Same source as `hero` (group-coach-bus.jpg) with a narrative mid-shot crop for PinnedStories' Group Transportation chapter. `fleetCoach`/`fleetCoachJourney` moved to two new, distinct coach photographs in the 2026-08-07 pass, so this source photo is now used only twice sitewide (down from four times).",
+      "Same source as `hero` (group-coach-bus.jpg) with a narrative mid-shot crop for PinnedStories' Group Transportation chapter. CONFIRMED 2026-08-08 via direct visual inspection: this is a genuinely distinct, full-size motorcoach (tandem rear axle, full coach fascia, multiple luggage bay doors) — NOT the same vehicle as `fleetCoach`/`fleetCoachJourney` (a smaller cutaway-chassis shuttle bus). Now also used as the /fleet page's new Executive Coach (up to 56 passengers) chapter image. See `groupCoachStoryCropped` for the person-excluded crop used on the Services page.",
+  },
+  groupCoachStoryCropped: {
+    src: "/assets/official/group-coach-bus-crop.jpg",
+    alt: "LCT Universal full-size executive motorcoach, group transportation",
+    objectPositionDesktop: "50% 50%",
+    objectPositionMobile: "50% 50%",
+    aspectRatio: "3 / 2",
+    notes:
+      "New 2026-08-08 — a real, rectangular crop (not AI content removal) of group-coach-bus.jpg, produced specifically for the Services → Group Transportation section per explicit client instruction: the source photo's standing chauffeur was distracting from the group-transportation message, and the section's own aspect ratios (4/5 desktop, 3/2 mobile) don't reliably crop the person out via object-position alone since the mobile ratio nearly matches the source photo's own ratio. This derivative keeps the bus sharp on both desktop and mobile and excludes the person from the visible composition.",
   },
   events: {
     src: "/assets/official/events-stadium-v2.jpg",
@@ -118,7 +194,16 @@ export const IMAGES = {
     src: "/assets/official/airport-dfw-sign-red.jpg",
     alt: "The red DFW monument sign marking the gateway to Dallas–Fort Worth",
     objectPositionDesktop: "50% 45%",
-    objectPositionMobile: "50% 40%",
+    // Corrected 2026-08-08 (mobile-first pass) — the "DFW" lettering sits in
+    // the right ~35% of this source photo, not centered; the previous mobile
+    // value ("50% 40%") was a near-duplicate of desktop and, on the
+    // narrower/taller `PageHero` container where this source is
+    // height-bound (full vertical extent always shows, only horizontal
+    // position has any cropping effect), centered the crop on the plain
+    // building/grass and left only a sliver of the "F" visible — verified
+    // via an actual mobile screenshot, not assumed. Shifted right so the
+    // full "DFW" lettering — the entire point of this photo — is in frame.
+    objectPositionMobile: "82% 42%",
     aspectRatio: "3 / 2",
     notes:
       "Added 2026-08-07 — a second, distinct DFW monument-sign photograph (different sign, different location on the airport campus) for the /airport page hero, so it doesn't repeat `airport`'s composition.",

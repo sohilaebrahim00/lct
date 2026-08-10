@@ -49,9 +49,16 @@ const CHAPTERS: ServiceChapter[] = [
     desc: "Sprinters and coaches coordinated for teams, delegations and large parties.",
     cta: "Request Group Transportation",
     to: "/fleet",
-    // Not fleetSprinter (events-fleet-stadium.jpg) — that source already
-    // appears one chapter above as Event Transportation's image.
-    image: { src: IMAGES.fleetCoach.src, alt: IMAGES.fleetCoach.alt, position: "60% 40%" },
+    // Client-supplied Group Transportation image (2026-08-08), cropped to
+    // exclude a standing chauffeur that distracted from the vehicle —
+    // see `groupCoachStoryCropped` in image-map.ts for the crop rationale.
+    // Not `fleetCoach`/`fleetCoachJourney` — those are the smaller Mini
+    // Coach, and this section is meant to represent the full-size coach.
+    image: {
+      src: IMAGES.groupCoachStoryCropped.src,
+      alt: IMAGES.groupCoachStoryCropped.alt,
+      position: "50% 42%",
+    },
   },
   {
     id: "private",

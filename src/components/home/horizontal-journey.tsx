@@ -18,13 +18,18 @@ type Slide = {
   tone: string;
 };
 
+// Looked up by id, not array position — FLEET_VEHICLES grew from 5 to 7
+// entries (2026-08-08 fleet/pricing audit) and positional indices would
+// silently pull the wrong vehicle's pax/bags/price into the wrong slide.
+const vehicle = (id: string) => FLEET_VEHICLES.find((v) => v.id === id)!;
+
 const SLIDES: Slide[] = [
   {
     id: "sedan",
     eyebrow: "01 — Fleet",
     title: "Executive Sedan",
     desc: "Mercedes-Benz S-Class for discreet business travel and private arrivals.",
-    meta: `${FLEET_VEHICLES[0].pax} passengers · ${FLEET_VEHICLES[0].bags} luggage · ${FLEET_VEHICLES[0].priceLabel}`,
+    meta: `${vehicle("sedan").pax} passengers · ${vehicle("sedan").bags} luggage · ${vehicle("sedan").priceLabel}`,
     imageKey: "fleetSedan",
     tone: "radial-gradient(80% 60% at 70% 40%, oklch(0.22 0.02 70 / 0.55), transparent 70%), #0a0908",
   },
@@ -33,7 +38,7 @@ const SLIDES: Slide[] = [
     eyebrow: "02 — Fleet",
     title: "Executive SUV",
     desc: "Cadillac Escalade with captain seating, extended legroom, and room for luggage.",
-    meta: `${FLEET_VEHICLES[1].pax} passengers · ${FLEET_VEHICLES[1].bags} luggage · ${FLEET_VEHICLES[1].priceLabel}`,
+    meta: `${vehicle("suv").pax} passengers · ${vehicle("suv").bags} luggage · ${vehicle("suv").priceLabel}`,
     imageKey: "fleetSuv",
     tone: "radial-gradient(80% 60% at 30% 50%, oklch(0.24 0.03 55 / 0.5), transparent 70%), #0b0a09",
   },
@@ -42,16 +47,16 @@ const SLIDES: Slide[] = [
     eyebrow: "03 — Fleet",
     title: "Executive Sprinter",
     desc: "Mercedes-Benz Sprinter for corporate groups, delegations, and VIP parties.",
-    meta: `${FLEET_VEHICLES[2].pax} passengers · ${FLEET_VEHICLES[2].bags} luggage · ${FLEET_VEHICLES[2].priceLabel}`,
+    meta: `${vehicle("sprinter").pax} passengers · ${vehicle("sprinter").bags} luggage · ${vehicle("sprinter").priceLabel}`,
     imageKey: "fleetSprinter",
     tone: "radial-gradient(70% 55% at 60% 35%, oklch(0.2 0.025 85 / 0.45), transparent 68%), #090908",
   },
   {
     id: "coach",
     eyebrow: "04 — Fleet",
-    title: "Executive Coach",
-    desc: "Large-group transportation for weddings, conferences, and signature events. Quote only.",
-    meta: `${FLEET_VEHICLES[3].pax} passengers · ${FLEET_VEHICLES[3].priceLabel}`,
+    title: "Executive Mini Coach",
+    desc: "Right-sized group transportation for weddings, shuttles, and corporate parties. Quote only.",
+    meta: `${vehicle("coachMini").pax} passengers · ${vehicle("coachMini").priceLabel}`,
     imageKey: "fleetCoachJourney",
     tone: "radial-gradient(75% 55% at 40% 45%, oklch(0.2 0.02 100 / 0.4), transparent 70%), #080807",
   },

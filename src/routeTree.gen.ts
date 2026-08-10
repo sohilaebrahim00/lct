@@ -13,16 +13,19 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AirportRouteImport } from './routes/airport'
 import { Route as BookRouteImport } from './routes/book'
+import { Route as CancellationPolicyRouteImport } from './routes/cancellation-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RatesRouteImport } from './routes/rates'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ZeroToleranceRouteImport } from './routes/zero-tolerance'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -42,6 +45,11 @@ const AirportRoute = AirportRouteImport.update({
 const BookRoute = BookRouteImport.update({
   id: '/book',
   path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationPolicyRoute = CancellationPolicyRouteImport.update({
+  id: '/cancellation-policy',
+  path: '/cancellation-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -74,6 +82,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RatesRoute = RatesRouteImport.update({
+  id: '/rates',
+  path: '/rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewsRoute = ReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
@@ -94,38 +107,49 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ZeroToleranceRoute = ZeroToleranceRouteImport.update({
+  id: '/zero-tolerance',
+  path: '/zero-tolerance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/airport': typeof AirportRoute
   '/book': typeof BookRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/privacy': typeof PrivacyRoute
+  '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
+  '/zero-tolerance': typeof ZeroToleranceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/airport': typeof AirportRoute
   '/book': typeof BookRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/privacy': typeof PrivacyRoute
+  '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
+  '/zero-tolerance': typeof ZeroToleranceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -133,16 +157,19 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/airport': typeof AirportRoute
   '/book': typeof BookRoute
+  '/cancellation-policy': typeof CancellationPolicyRoute
   '/contact': typeof ContactRoute
   '/corporate': typeof CorporateRoute
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
   '/privacy': typeof PrivacyRoute
+  '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
   '/service-areas': typeof ServiceAreasRoute
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
+  '/zero-tolerance': typeof ZeroToleranceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,48 +178,57 @@ export interface FileRouteTypes {
     | '/about'
     | '/airport'
     | '/book'
+    | '/cancellation-policy'
     | '/contact'
     | '/corporate'
     | '/events'
     | '/faq'
     | '/fleet'
     | '/privacy'
+    | '/rates'
     | '/reviews'
     | '/service-areas'
     | '/services'
     | '/terms'
+    | '/zero-tolerance'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/airport'
     | '/book'
+    | '/cancellation-policy'
     | '/contact'
     | '/corporate'
     | '/events'
     | '/faq'
     | '/fleet'
     | '/privacy'
+    | '/rates'
     | '/reviews'
     | '/service-areas'
     | '/services'
     | '/terms'
+    | '/zero-tolerance'
   id:
     | '__root__'
     | '/'
     | '/about'
     | '/airport'
     | '/book'
+    | '/cancellation-policy'
     | '/contact'
     | '/corporate'
     | '/events'
     | '/faq'
     | '/fleet'
     | '/privacy'
+    | '/rates'
     | '/reviews'
     | '/service-areas'
     | '/services'
     | '/terms'
+    | '/zero-tolerance'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -200,16 +236,19 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AirportRoute: typeof AirportRoute
   BookRoute: typeof BookRoute
+  CancellationPolicyRoute: typeof CancellationPolicyRoute
   ContactRoute: typeof ContactRoute
   CorporateRoute: typeof CorporateRoute
   EventsRoute: typeof EventsRoute
   FaqRoute: typeof FaqRoute
   FleetRoute: typeof FleetRoute
   PrivacyRoute: typeof PrivacyRoute
+  RatesRoute: typeof RatesRoute
   ReviewsRoute: typeof ReviewsRoute
   ServiceAreasRoute: typeof ServiceAreasRoute
   ServicesRoute: typeof ServicesRoute
   TermsRoute: typeof TermsRoute
+  ZeroToleranceRoute: typeof ZeroToleranceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -240,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/book'
       fullPath: '/book'
       preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation-policy': {
+      id: '/cancellation-policy'
+      path: '/cancellation-policy'
+      fullPath: '/cancellation-policy'
+      preLoaderRoute: typeof CancellationPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -284,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rates': {
+      id: '/rates'
+      path: '/rates'
+      fullPath: '/rates'
+      preLoaderRoute: typeof RatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reviews': {
       id: '/reviews'
       path: '/reviews'
@@ -312,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/zero-tolerance': {
+      id: '/zero-tolerance'
+      path: '/zero-tolerance'
+      fullPath: '/zero-tolerance'
+      preLoaderRoute: typeof ZeroToleranceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -320,16 +380,19 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AirportRoute: AirportRoute,
   BookRoute: BookRoute,
+  CancellationPolicyRoute: CancellationPolicyRoute,
   ContactRoute: ContactRoute,
   CorporateRoute: CorporateRoute,
   EventsRoute: EventsRoute,
   FaqRoute: FaqRoute,
   FleetRoute: FleetRoute,
   PrivacyRoute: PrivacyRoute,
+  RatesRoute: RatesRoute,
   ReviewsRoute: ReviewsRoute,
   ServiceAreasRoute: ServiceAreasRoute,
   ServicesRoute: ServicesRoute,
   TermsRoute: TermsRoute,
+  ZeroToleranceRoute: ZeroToleranceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

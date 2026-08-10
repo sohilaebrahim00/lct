@@ -8,7 +8,7 @@ import { IMAGES } from "@/lib/image-map";
 import { ensureGsap, prefersReducedMotion } from "@/lib/motion";
 import { pageMeta } from "@/lib/seo";
 
-const chauffeurImg = IMAGES.corporate.src;
+const chauffeurImg = IMAGES.corporate;
 
 export const Route = createFileRoute("/corporate")({
   head: () => ({
@@ -100,7 +100,9 @@ function Corporate() {
         eyebrow="Corporate"
         title="A silent partner for executive travel."
         description="Dedicated account management, consolidated billing, and priority dispatch."
-        image={chauffeurImg}
+        image={chauffeurImg.src}
+        imagePosition={chauffeurImg.objectPositionDesktop}
+        imagePositionMobile={chauffeurImg.objectPositionMobile}
         imageEdge="diagonal"
       />
 

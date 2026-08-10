@@ -7,6 +7,7 @@ import { IMAGES } from "@/lib/image-map";
 import { ensureGsap, prefersReducedMotion } from "@/lib/motion";
 import { revealClipImage, revealLines } from "@/lib/reveal";
 import { pageMeta } from "@/lib/seo";
+import { TrustBadges } from "@/components/trust-badges";
 
 export const Route = createFileRoute("/about")({
   head: () =>
@@ -77,6 +78,8 @@ function About() {
         title="A quiet standard, kept."
         description={`Founded ${COMPANY.foundedYear} to elevate luxury ground transportation across ${CONTACT.serviceRegion}.`}
         image={hero.src}
+        imagePosition={hero.objectPositionDesktop}
+        imagePositionMobile={hero.objectPositionMobile}
       />
 
       <section className="mx-auto max-w-[var(--container-max)] px-[var(--page-gutter)] py-24">
@@ -131,6 +134,25 @@ function About() {
               Reserve your ride
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" aria-hidden />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust / Accreditation — real BBB / GNET / NLA badges, client-supplied
+          2026-08-08 (see TRUST_BADGES in site-data.ts). This is the fullest,
+          most generous presentation sitewide — the footer's version (every
+          page) is deliberately smaller and quieter. */}
+      <section className="border-t border-border py-20">
+        <div className="mx-auto max-w-[var(--container-max)] px-[var(--page-gutter)] text-center">
+          <div className="eyebrow">Recognized Industry Standards</div>
+          <h2 className="mt-4 font-display text-3xl text-foreground md:text-4xl">
+            Trusted. Accredited. Professional.
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+            LCT Universal is proud to be recognized by the following industry organizations.
+          </p>
+          <div className="mt-12">
+            <TrustBadges size="full" withNames />
           </div>
         </div>
       </section>

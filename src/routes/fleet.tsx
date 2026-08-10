@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 import { SiteLayout, PageHero } from "@/components/site-layout";
 import { SectionHeading } from "@/components/section-heading";
 import { CheckCircle2, ArrowRight, Phone } from "lucide-react";
@@ -59,17 +59,23 @@ const FLEET_INQUIRY_ID = "fleet-inquiry";
 /** Exact CTA copy per vehicle, per the approved conversion-flow spec — not a generic template. */
 const CTA_LABEL: Record<string, string> = {
   sedan: "Book This Vehicle",
+  firstClassSedan: "Book This Vehicle",
   suv: "Book This Vehicle",
+  luxurySuv: "Book This Vehicle",
   sprinter: "Request a Sprinter Quote",
-  coach: "Request a Coach Quote",
+  coachMini: "Request a Mini Coach Quote",
+  coachLarge: "Request a Coach Quote",
 };
 
 /** Short supporting line per vehicle, placed right under the name — approved copy, not paragraphs. */
 const VEHICLE_BLURB: Record<string, string> = {
   sedan: "Refined point-to-point travel for executives, airport transfers and private rides.",
+  firstClassSedan: "The same S-Class, elevated — priority white-glove service for two.",
   suv: "Premium space for families, executives and luggage-heavy airport travel.",
+  luxurySuv: "The Escalade at our premium service tier, for clients who want the very best.",
   sprinter: "Private group transportation with executive comfort and flexible capacity.",
-  coach: "Built for conferences, weddings, conventions and coordinated group travel.",
+  coachMini: "Right-sized group transportation for weddings, shuttles and corporate parties.",
+  coachLarge: "Built for conventions, large weddings and coordinated large-scale group travel.",
 };
 
 function ctaLabel(v: FleetVehicle) {
@@ -113,11 +119,11 @@ function trackBookMouseDown(v: FleetVehicle) {
 export const Route = createFileRoute("/fleet")({
   head: () =>
     pageMeta({
-      title: "Fleet — Executive Sedans, SUVs & Coaches — LCT Universal",
+      title: "Fleet — Sedans, SUVs, Sprinters & Coaches — LCT Universal",
       description:
-        "Executive Sedan, Cadillac Escalade, Mercedes-Benz Sprinter, and Executive Coach. Verified capacities and hourly rates from LCT Universal in Dallas–Fort Worth.",
+        "Executive Sedan, First Class Sedan, Executive SUV, Luxury SUV, Mercedes-Benz Sprinter, Executive Mini Coach and Executive Coach. Verified capacities and live rates from LCT Universal in Dallas–Fort Worth.",
       ogTitle: "Fleet — LCT Universal",
-      ogDescription: "Executive vehicles with verified capacities and rates.",
+      ogDescription: "Executive vehicles with verified capacities.",
       path: "/fleet",
     }),
   component: Fleet,
@@ -236,10 +242,17 @@ function FleetConversionBar({
 }
 
 function Fleet() {
-  const sedan = FLEET_VEHICLES[0];
-  const suv = FLEET_VEHICLES[1];
-  const sprinter = FLEET_VEHICLES[2];
-  const coach = FLEET_VEHICLES[3];
+  // Looked up by id, not array position — FLEET_VEHICLES grew from 5 to 7
+  // entries (2026-08-08 fleet/pricing audit) and positional indices would
+  // silently pull the wrong vehicle into the wrong chapter after that.
+  const find = (id: string) => FLEET_VEHICLES.find((v) => v.id === id)!;
+  const sedan = find("sedan");
+  const firstClassSedan = find("firstClassSedan");
+  const suv = find("suv");
+  const luxurySuv = find("luxurySuv");
+  const sprinter = find("sprinter");
+  const coachMini = find("coachMini");
+  const coachLarge = find("coachLarge");
   const heroImg = IMAGES.fleetHero;
 
   const [inquiryVehicle, setInquiryVehicle] = useState<string | undefined>();
@@ -295,6 +308,19 @@ function Fleet() {
         scrollTrigger: { trigger: ".ch-sedan", start: "top 70%" },
       });
 
+      // Chapter 1b — First Class Sedan: same full-bleed language as Sedan,
+      // mirrored wipe direction so the two adjacent sedan chapters don't
+      // read as an identical repeated beat.
+      revealClipImage(".ch-fcs-media", { edge: "diagonal-reverse", start: "top 78%" });
+      gsap.from(".ch-fcs-copy > *", {
+        y: 24,
+        autoAlpha: 0,
+        stagger: 0.08,
+        duration: 0.7,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".ch-fcs", start: "top 70%" },
+      });
+
       // Chapter 2 — SUV: split spec panel + one-shot light sweep
       revealClipImage(".ch-suv-media", { edge: "left", start: "top 78%" });
       gsap.from(".ch-suv-copy > *", {
@@ -317,6 +343,29 @@ function Fleet() {
           ),
       });
 
+      // Chapter 2b — Luxury SUV: same split-panel language as SUV, image on
+      // the right instead of the left so the pair doesn't feel copy-pasted.
+      revealClipImage(".ch-lsuv-media", { edge: "right", start: "top 78%" });
+      gsap.from(".ch-lsuv-copy > *", {
+        y: 24,
+        autoAlpha: 0,
+        stagger: 0.07,
+        duration: 0.65,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".ch-lsuv", start: "top 75%" },
+      });
+      ScrollTrigger.create({
+        trigger: ".ch-lsuv-media",
+        start: "top 70%",
+        once: true,
+        onEnter: () =>
+          gsap.fromTo(
+            ".ch-lsuv-sweep",
+            { xPercent: 140, autoAlpha: 0.9 },
+            { xPercent: -220, autoAlpha: 0, duration: 1.1, ease: "power1.inOut", delay: 0.3 },
+          ),
+      });
+
       // Chapter 3 — Sprinter: asymmetric inset, oversized type behind
       gsap.from(".ch-sprinter-numeral", {
         autoAlpha: 0,
@@ -335,7 +384,7 @@ function Fleet() {
         scrollTrigger: { trigger: ".ch-sprinter", start: "top 68%" },
       });
 
-      // Chapter 4 — Coach: wide panoramic banner, slow horizontal drift
+      // Chapter 4 — Mini Coach: wide panoramic banner, slow horizontal drift
       revealClipImage(".ch-coach-media", { edge: "right", start: "top 80%", duration: 1.3 });
       gsap.to(".ch-coach-media img", {
         xPercent: -6,
@@ -350,6 +399,24 @@ function Fleet() {
         ease: "power3.out",
         scrollTrigger: { trigger: ".ch-coach", start: "top 75%" },
       });
+
+      // Chapter 5 — Executive Coach: same panoramic banner language as Mini
+      // Coach (both are "wide vehicle" chapters), drifting the opposite
+      // direction so the two don't read as an identical repeated beat.
+      revealClipImage(".ch-coach-large-media", { edge: "left", start: "top 80%", duration: 1.3 });
+      gsap.to(".ch-coach-large-media img", {
+        xPercent: 6,
+        ease: "none",
+        scrollTrigger: { trigger: ".ch-coach-large", start: "top bottom", end: "bottom top", scrub: true },
+      });
+      gsap.from(".ch-coach-large-copy > *", {
+        y: 20,
+        autoAlpha: 0,
+        stagger: 0.07,
+        duration: 0.6,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".ch-coach-large", start: "top 75%" },
+      });
     }, root);
     return () => ctx.revert();
   }, []);
@@ -362,6 +429,7 @@ function Fleet() {
         description="Every LCT Universal vehicle is meticulously maintained and prepared before dispatch — because to each client, it is the only one that matters."
         image={heroImg.src}
         imagePosition={heroImg.objectPositionDesktop}
+        imagePositionMobile={heroImg.objectPositionMobile}
         imageEdge="diagonal-reverse"
       />
 
@@ -380,8 +448,13 @@ function Fleet() {
               src={IMAGES.fleetSedan.src}
               alt={IMAGES.fleetSedan.alt}
               loading="lazy"
-              className="ch-sedan-media absolute inset-0 h-full w-full object-cover"
-              style={{ objectPosition: IMAGES.fleetSedan.objectPositionDesktop }}
+              className="ch-sedan-media absolute inset-0 h-full w-full object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+              style={
+                {
+                  "--img-pos-m": IMAGES.fleetSedan.objectPositionMobile,
+                  "--img-pos-d": IMAGES.fleetSedan.objectPositionDesktop,
+                } as CSSProperties
+              }
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
           </div>
@@ -415,6 +488,55 @@ function Fleet() {
           </div>
         </section>
 
+        {/* Chapter 1b — First Class Sedan: same full-bleed template as Sedan
+            (same verified S-Class, different real photograph — a white-glove
+            chauffeur portrait rather than the exterior valet shot). */}
+        <section className="ch-fcs relative overflow-hidden border-t border-border" data-vehicle-chapter="firstClassSedan">
+          <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
+            <img
+              src={IMAGES.fleetFirstClassSedan.src}
+              alt={IMAGES.fleetFirstClassSedan.alt}
+              loading="lazy"
+              className="ch-fcs-media absolute inset-0 h-full w-full object-cover [object-position:var(--fcs-pos-m)] md:[object-position:var(--fcs-pos-d)]"
+              style={
+                {
+                  "--fcs-pos-m": IMAGES.fleetFirstClassSedan.objectPositionMobile,
+                  "--fcs-pos-d": IMAGES.fleetFirstClassSedan.objectPositionDesktop,
+                } as CSSProperties
+              }
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+          </div>
+          <div className="ch-fcs-copy mx-auto max-w-[var(--container-max)] px-6 pb-16 pt-8 lg:px-10">
+            <div className="eyebrow text-champagne">{firstClassSedan.model}</div>
+            <h2 className="mt-3 font-display text-4xl md:text-6xl">{firstClassSedan.name}</h2>
+            <p className="mt-3 max-w-md text-sm text-foreground/80">{VEHICLE_BLURB.firstClassSedan}</p>
+            <div className="mt-6 flex flex-wrap items-end gap-8 border-y border-border py-4">
+              <div>
+                <div className="eyebrow text-[0.6rem]">Passengers</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{firstClassSedan.pax}</div>
+              </div>
+              <div>
+                <div className="eyebrow text-[0.6rem]">Luggage</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{firstClassSedan.bags}</div>
+              </div>
+              <div className="ml-auto text-right">
+                <div className="eyebrow text-[0.6rem]">Pricing</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{firstClassSedan.priceLabel}</div>
+              </div>
+            </div>
+            <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+              {firstClassSedan.features.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-foreground/85">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-champagne" aria-hidden />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <VehicleCta v={firstClassSedan} onQuote={handleQuote} />
+          </div>
+        </section>
+
         {/* Chapter 2 — SUV: split spotlight specification panel */}
         <section className="ch-suv border-t border-border" data-vehicle-chapter="suv">
           <div className="mx-auto grid max-w-[var(--container-max)] gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-28">
@@ -423,8 +545,13 @@ function Fleet() {
                 src={IMAGES.fleetSuv.src}
                 alt={IMAGES.fleetSuv.alt}
                 loading="lazy"
-                className="aspect-[4/3] w-full object-cover"
-                style={{ objectPosition: IMAGES.fleetSuv.objectPositionDesktop }}
+                className="aspect-[4/3] w-full object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+                style={
+                  {
+                    "--img-pos-m": IMAGES.fleetSuv.objectPositionMobile,
+                    "--img-pos-d": IMAGES.fleetSuv.objectPositionDesktop,
+                  } as CSSProperties
+                }
               />
               <div className="ch-suv-sweep pointer-events-none absolute inset-y-0 left-0 w-1/3 opacity-0" style={{ background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--champagne) 55%, white), transparent)", mixBlendMode: "screen" }} />
             </div>
@@ -438,6 +565,41 @@ function Fleet() {
                 <SpecRow label="Pricing" value={suv.priceLabel} />
               </div>
               <VehicleCta v={suv} onQuote={handleQuote} />
+            </div>
+          </div>
+        </section>
+
+        {/* Chapter 2b — Luxury SUV: same split-panel template as SUV, image
+            and copy columns swapped so the adjacent pair doesn't feel
+            copy-pasted (same verified Escalade, different real photograph —
+            rear 3/4 vs. SUV's front 3/4). */}
+        <section className="ch-lsuv border-t border-border" data-vehicle-chapter="luxurySuv">
+          <div className="mx-auto grid max-w-[var(--container-max)] gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-28">
+            <div className="ch-lsuv-copy order-2 rounded-sm border border-border/60 bg-[color:var(--surface-elevated)]/40 p-8 lg:order-1">
+              <div className="eyebrow">{luxurySuv.model}</div>
+              <h2 className="mt-3 font-display text-3xl md:text-4xl">{luxurySuv.name}</h2>
+              <p className="mt-3 text-sm text-muted-foreground">{VEHICLE_BLURB.luxurySuv}</p>
+              <div className="mt-6">
+                <SpecRow label="Passengers" value={luxurySuv.pax} />
+                <SpecRow label="Luggage" value={luxurySuv.bags ?? "—"} />
+                <SpecRow label="Pricing" value={luxurySuv.priceLabel} />
+              </div>
+              <VehicleCta v={luxurySuv} onQuote={handleQuote} />
+            </div>
+            <div className="ch-lsuv-media relative order-1 overflow-hidden rounded-sm luxe-card lg:order-2">
+              <img
+                src={IMAGES.fleetLuxurySuv.src}
+                alt={IMAGES.fleetLuxurySuv.alt}
+                loading="lazy"
+                className="aspect-[4/3] w-full object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+                style={
+                  {
+                    "--img-pos-m": IMAGES.fleetLuxurySuv.objectPositionMobile,
+                    "--img-pos-d": IMAGES.fleetLuxurySuv.objectPositionDesktop,
+                  } as CSSProperties
+                }
+              />
+              <div className="ch-lsuv-sweep pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-0" style={{ background: "linear-gradient(90deg, transparent, color-mix(in oklab, var(--champagne) 55%, white), transparent)", mixBlendMode: "screen" }} />
             </div>
           </div>
         </section>
@@ -485,40 +647,88 @@ function Fleet() {
                 src={IMAGES.sprinterInterior.src}
                 alt={IMAGES.sprinterInterior.alt}
                 loading="lazy"
-                className="aspect-[3/2] w-full object-cover"
-                style={{ objectPosition: IMAGES.sprinterInterior.objectPositionDesktop }}
+                className="aspect-[3/2] w-full object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+                style={
+                  {
+                    "--img-pos-m": IMAGES.sprinterInterior.objectPositionMobile,
+                    "--img-pos-d": IMAGES.sprinterInterior.objectPositionDesktop,
+                  } as CSSProperties
+                }
               />
             </div>
           </div>
         </section>
 
-        {/* Chapter 4 — Coach: wide panoramic banner */}
-        <section className="ch-coach relative overflow-hidden border-t border-border" data-vehicle-chapter="coach">
+        {/* Chapter 4 — Executive Mini Coach: wide panoramic banner */}
+        <section className="ch-coach relative overflow-hidden border-t border-border" data-vehicle-chapter="coachMini">
           <div className="ch-coach-media relative aspect-[16/9] w-full overflow-hidden md:aspect-[24/9]">
             <img
               src={IMAGES.fleetCoach.src}
               alt={IMAGES.fleetCoach.alt}
               loading="lazy"
-              className="absolute inset-0 h-full w-[112%] object-cover"
-              style={{ objectPosition: IMAGES.fleetCoach.objectPositionDesktop }}
+              className="absolute inset-0 h-full w-[112%] object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+              style={
+                {
+                  "--img-pos-m": IMAGES.fleetCoach.objectPositionMobile,
+                  "--img-pos-d": IMAGES.fleetCoach.objectPositionDesktop,
+                } as CSSProperties
+              }
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/15 to-transparent" />
           </div>
           <div className="ch-coach-copy mx-auto max-w-[var(--container-max)] px-6 pb-16 pt-8 lg:px-10">
-            <div className="eyebrow">{coach.model}</div>
-            <h2 className="mt-3 font-display text-4xl md:text-5xl">{coach.name}</h2>
-            <p className="mt-3 max-w-md text-sm text-muted-foreground">{VEHICLE_BLURB.coach}</p>
+            <div className="eyebrow">{coachMini.model}</div>
+            <h2 className="mt-3 font-display text-4xl md:text-5xl">{coachMini.name}</h2>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">{VEHICLE_BLURB.coachMini}</p>
             <div className="mt-6 flex flex-wrap items-end gap-8">
               <div>
                 <div className="eyebrow text-[0.6rem]">Passengers</div>
-                <div className="mt-1 font-display text-2xl text-gold-gradient">{coach.pax}</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{coachMini.pax}</div>
               </div>
               <div>
                 <div className="eyebrow text-[0.6rem]">Pricing</div>
-                <div className="mt-1 font-display text-2xl text-gold-gradient">{coach.priceLabel}</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{coachMini.priceLabel}</div>
               </div>
             </div>
-            <VehicleCta v={coach} onQuote={handleQuote} showDispatchCall />
+            <VehicleCta v={coachMini} onQuote={handleQuote} showDispatchCall />
+          </div>
+        </section>
+
+        {/* Chapter 5 — Executive Coach: wide panoramic banner, full-size motorcoach */}
+        <section
+          className="ch-coach-large relative overflow-hidden border-t border-border"
+          data-vehicle-chapter="coachLarge"
+        >
+          <div className="ch-coach-large-media relative aspect-[16/9] w-full overflow-hidden md:aspect-[24/9]">
+            <img
+              src={IMAGES.groupCoachStory.src}
+              alt={IMAGES.groupCoachStory.alt}
+              loading="lazy"
+              className="absolute inset-0 h-full w-[112%] object-cover [object-position:var(--img-pos-m)] md:[object-position:var(--img-pos-d)]"
+              style={
+                {
+                  "--img-pos-m": IMAGES.groupCoachStory.objectPositionMobile,
+                  "--img-pos-d": IMAGES.groupCoachStory.objectPositionDesktop,
+                } as CSSProperties
+              }
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/15 to-transparent" />
+          </div>
+          <div className="ch-coach-large-copy mx-auto max-w-[var(--container-max)] px-6 pb-16 pt-8 lg:px-10">
+            <div className="eyebrow">{coachLarge.model}</div>
+            <h2 className="mt-3 font-display text-4xl md:text-5xl">{coachLarge.name}</h2>
+            <p className="mt-3 max-w-md text-sm text-muted-foreground">{VEHICLE_BLURB.coachLarge}</p>
+            <div className="mt-6 flex flex-wrap items-end gap-8">
+              <div>
+                <div className="eyebrow text-[0.6rem]">Passengers</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{coachLarge.pax}</div>
+              </div>
+              <div>
+                <div className="eyebrow text-[0.6rem]">Pricing</div>
+                <div className="mt-1 font-display text-2xl text-gold-gradient">{coachLarge.priceLabel}</div>
+              </div>
+            </div>
+            <VehicleCta v={coachLarge} onQuote={handleQuote} showDispatchCall />
           </div>
         </section>
       </div>

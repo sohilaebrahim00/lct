@@ -121,6 +121,8 @@ function ServiceAreas() {
         title="Where we operate."
         description={`Executive transportation across ${CONTACT.serviceRegion}.`}
         image={hero.src}
+        imagePosition={hero.objectPositionDesktop}
+        imagePositionMobile={hero.objectPositionMobile}
       />
 
       {/* Signature interaction — a stylized DFW diagram with animated route lines, not a literal map */}
