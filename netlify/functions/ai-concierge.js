@@ -38,7 +38,7 @@ Valid hrefs: /book, /fleet, /rates, /airport, /corporate, /events, /service-area
 
 const MAX_MESSAGE_LENGTH = 600;
 const MAX_HISTORY = 8;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 // Minimal in-memory rate limit — resets on cold start, same documented
 // limitation as the earlier Supabase version. A durable limit (e.g. a
@@ -93,7 +93,13 @@ async function callGemini(systemPrompt, history, userMessage) {
       }),
     },
   );
-  if (!res.ok) throw new Error(`Gemini request failed: ${res.status}`);
+  if (!res.ok) {
+    // Log status + response body for diagnosis — never the request URL
+    // (it carries `?key=...`) and never the key itself.
+    const errorBody = await res.text().catch(() => "<unreadable response body>");
+    console.error("[ai-concierge] Gemini API error:", { status: res.status, model: GEMINI_MODEL, body: errorBody });
+    throw new Error(`Gemini request failed: ${res.status}`);
+  }
   const data = await res.json();
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
 }
