@@ -14,7 +14,7 @@ const EXPLORE_LINKS: FooterLink[] = [
   { to: "/service-areas", label: "Service Areas" },
   { to: "/faq", label: "FAQ" },
   { to: "/join-our-team", label: "Join Our Team" },
-  { to: "/blog", label: "Insights" },
+  { to: "/blog", label: "Blog" },
 ];
 
 const SERVICES_LINKS: FooterLink[] = [

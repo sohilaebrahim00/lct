@@ -55,7 +55,7 @@ export const Route = createFileRoute("/blog/$slug")({
             "@type": "BreadcrumbList",
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Home", item: `${CONTACT.siteUrl}/` },
-              { "@type": "ListItem", position: 2, name: "Insights", item: `${CONTACT.siteUrl}/blog` },
+              { "@type": "ListItem", position: 2, name: "Blog", item: `${CONTACT.siteUrl}/blog` },
               { "@type": "ListItem", position: 3, name: article.title, item: `${CONTACT.siteUrl}/blog/${article.slug}` },
             ],
           }),
@@ -118,7 +118,7 @@ function BlogArticlePage() {
             </Link>
             <ChevronRight className="h-3 w-3 shrink-0" aria-hidden />
             <Link to="/blog" className="transition hover:text-champagne">
-              Insights
+              Blog
             </Link>
             <ChevronRight className="h-3 w-3 shrink-0" aria-hidden />
             <span className="truncate text-foreground/70">{article.title}</span>

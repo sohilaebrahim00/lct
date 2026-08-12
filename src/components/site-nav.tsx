@@ -55,7 +55,7 @@ const NAV_ENTRIES: NavEntry[] = [
       { to: "/service-areas", label: "Service Areas" },
       { to: "/faq", label: "FAQ" },
       { to: "/join-our-team", label: "Join Our Team" },
-      { to: "/blog", label: "Insights" },
+      { to: "/blog", label: "Blog" },
     ],
   },
   {
