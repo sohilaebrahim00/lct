@@ -16,11 +16,13 @@ import { ClienityEmbed } from "@/components/applications/clienity-embed";
  * old-site field sets (not placeholder/template forms — see the corporate
  * form note in PROJECT_SPEC.md §1c-34 for the one exception that was held
  * back). Clienity is the submission source of truth here; the local
- * Supabase-backed forms in this same `applications/` folder
- * (driver-application-form.tsx etc.) are kept in the codebase, wired to
- * their own migration and tables, but intentionally disconnected from this
- * route per explicit client instruction not to run two parallel submission
- * pipelines for the same application.
+ * Supabase-backed forms that previously lived in this same `applications/`
+ * folder (driver-application-form.tsx etc.) were removed entirely
+ * (2026-08-12, see PROJECT_SPEC.md §1c-41) rather than left disconnected —
+ * they were never imported by this route or any other, per explicit client
+ * instruction not to run two parallel submission pipelines for the same
+ * application. Their Supabase migration/tables are untouched (not live,
+ * out of scope for a UI-only cleanup).
  */
 const CLIENITY_FORMS: Record<PathwayId, { url: string; minHeightMobile: number; minHeightDesktop: number }> = {
   driver: {

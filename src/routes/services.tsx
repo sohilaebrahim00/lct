@@ -213,11 +213,24 @@ function Services() {
               <div className="services-rail-fill absolute inset-0 bg-gold-gradient" />
             </div>
 
-            {CHAPTERS.map((c) => (
+            {CHAPTERS.map((c, i) => (
               <div
                 key={c.id}
                 className="service-chapter flex flex-col border-b border-border/50 py-10 last:border-b-0 lg:min-h-[70vh] lg:justify-center"
               >
+                {/* Mobile-only cinematic card: each chapter carries its own
+                    image directly above its own text, so the two never read
+                    as separate sections — see PROJECT_SPEC.md §1c-41. The
+                    desktop sticky cross-fade column below owns these same
+                    images at lg: and up; this is the only other place each
+                    one appears, so nothing is duplicated. */}
+                <img
+                  src={c.image.src}
+                  alt={c.image.alt}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  className="mb-6 aspect-[3/2] w-full rounded-sm object-cover lg:hidden"
+                  style={{ objectPosition: c.image.position }}
+                />
                 <h2 className="service-chapter-title font-display text-3xl leading-tight transition-colors duration-500 md:text-5xl">
                   {c.title}
                 </h2>
@@ -236,7 +249,8 @@ function Services() {
             ))}
           </div>
 
-          {/* Sticky editorial media — cross-fades between chapters as the index scrolls past */}
+          {/* Sticky editorial media (desktop only) — cross-fades between
+              chapters as the index scrolls past. Unchanged from before. */}
           <div className="relative hidden lg:block">
             <div className="sticky top-28 aspect-[4/5] w-full overflow-hidden rounded-sm luxe-card">
               {CHAPTERS.map((c, i) => (
@@ -251,20 +265,6 @@ function Services() {
               ))}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             </div>
-          </div>
-
-          {/* Mobile: full-width image per chapter, no sticky/pinning */}
-          <div className="grid gap-4 lg:hidden">
-            {CHAPTERS.map((c) => (
-              <img
-                key={c.id}
-                src={c.image.src}
-                alt={c.image.alt}
-                loading="lazy"
-                className="aspect-[3/2] w-full rounded-sm object-cover"
-                style={{ objectPosition: c.image.position }}
-              />
-            ))}
           </div>
         </div>
       </section>
