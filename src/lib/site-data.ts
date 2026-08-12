@@ -319,6 +319,100 @@ export const RATES = {
   ],
 } as const;
 
+/**
+ * Client-supplied 2026-08-11 — full DFW Metroplex coverage list ("We cover
+ * the whole Dallas-Fort Worth metroplex"), grouped into 3 regions for
+ * `/service-areas` and `areaServed` structured data. "Lake Worth" appeared
+ * in both the client's Fort Worth list and their Mid-Cities/North DFW list;
+ * per explicit instruction not to visibly duplicate it, it's kept once here
+ * under Fort Worth & Southwest Metro (Lake Worth, TX sits directly
+ * northwest of Fort Worth proper, geographically part of that cluster, not
+ * the Mid-Cities/North DFW one).
+ */
+export const SERVICE_AREA_GROUPS = [
+  {
+    id: "dallas",
+    title: "Dallas & Surrounding Communities",
+    blurb:
+      "Downtown Dallas, the Park Cities, and the close-in suburbs across the eastern and southern Metroplex.",
+    cities: [
+      "Dallas",
+      "Highland Park",
+      "University Park",
+      "Addison",
+      "Farmers Branch",
+      "Garland",
+      "Richardson",
+      "Mesquite",
+      "Balch Springs",
+      "Sunnyvale",
+      "Rowlett",
+      "Sachse",
+      "Seagoville",
+      "Hutchins",
+      "Wilmer",
+      "Lancaster",
+      "DeSoto",
+      "Duncanville",
+      "Cedar Hill",
+      "Red Oak",
+      "Glenn Heights",
+      "Ovilla",
+    ],
+  },
+  {
+    id: "fort-worth",
+    title: "Fort Worth & Southwest Metro",
+    blurb:
+      "Downtown and the Cultural District, plus the cities ringing Fort Worth to the west, south, and southwest.",
+    cities: [
+      "Fort Worth",
+      "Arlington",
+      "Benbrook",
+      "Lake Worth",
+      "River Oaks",
+      "White Settlement",
+      "Westworth Village",
+      "Sansom Park",
+      "Forest Hill",
+      "Everman",
+      "Edgecliff Village",
+      "Kennedale",
+      "Mansfield",
+      "Crowley",
+      "Burleson",
+      "Pantego",
+      "Dalworthington Gardens",
+    ],
+  },
+  {
+    id: "mid-cities",
+    title: "Mid-Cities & North DFW",
+    blurb:
+      "The corridor between Dallas and Fort Worth, from Grapevine and Southlake north through Keller and Saginaw.",
+    cities: [
+      "Grapevine",
+      "Southlake",
+      "Colleyville",
+      "Westlake",
+      "Trophy Club",
+      "Roanoke",
+      "Keller",
+      "Euless",
+      "Bedford",
+      "Hurst",
+      "North Richland Hills",
+      "Richland Hills",
+      "Haltom City",
+      "Watauga",
+      "Saginaw",
+      "Haslet",
+      "Azle",
+      "Blue Mound",
+    ],
+  },
+] as const;
+
 export const SERVICES_VERIFIED = [
   {
     id: "private",

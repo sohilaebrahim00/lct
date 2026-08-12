@@ -137,22 +137,34 @@ export const IMAGES = {
       "New key, added 2026-08-07, source IMG_0964.HEIC — companion interior shot for `fleetSprinter`, used on the /fleet Sprinter chapter so the vehicle reads as a real, inspectable product rather than exterior-only.",
   },
   fleetCoach: {
-    src: "/assets/official/coach-airport-arrival.jpg",
-    alt: "LCT Universal Executive Mini Coach with chauffeur boarding at a covered arrival area",
-    objectPositionDesktop: "40% 50%",
-    objectPositionMobile: "45% 45%",
+    // Changed 2026-08-11 — client explicitly rejected `coach-airport-arrival.jpg`
+    // (dominant composition was the chauffeur's lower body/legs against wet
+    // pavement, with the coach itself secondary) and required it removed
+    // from this placement entirely, not re-cropped. Visually inspected every
+    // remaining real Mini Coach photo in the project — only one other exists
+    // (`coach-sideprofile-day.jpg`, previously used only for the homepage
+    // HorizontalJourney slide/`fleetCoachJourney`) — so it's now used here
+    // too. Different pages (this is /fleet + /events; `fleetCoachJourney` is
+    // the homepage), and given distinct object-position/crop values below so
+    // the two placements don't read as an identical repeated shot. The
+    // rejected photo remains on disk, unreferenced, per the client's
+    // "do not reuse in that section" instruction — not deleted.
+    src: "/assets/official/coach-sideprofile-day.jpg",
+    alt: "LCT Universal Executive Mini Coach, full side profile in daylight",
+    objectPositionDesktop: "20% 50%",
+    objectPositionMobile: "15% 48%",
     aspectRatio: "3 / 2",
     notes:
-      "Added 2026-08-07, source IMG_1156.HEIC — sharp branded livery shot at a covered pickup area, replacing the group-coach-bus.jpg crop previously used here (that photo remains in use for `hero` and `groupCoachStory`). Used by the /fleet page's Executive Mini Coach chapter. RECLASSIFIED 2026-08-08: this is a single-rear-axle, cutaway-chassis shuttle bus (visually confirmed) — a Mini Coach, not a full-size motorcoach. Previously mislabeled 'Executive Coach' at 37–50 passengers; corrected per client instruction (see FLEET_VEHICLES in site-data.ts).",
+      "Used by the /fleet page's Executive Mini Coach chapter and the /events page. This is a single-rear-axle, cutaway-chassis shuttle bus (visually confirmed) — a Mini Coach, not a full-size motorcoach (see FLEET_VEHICLES in site-data.ts).",
   },
   fleetCoachJourney: {
     src: "/assets/official/coach-sideprofile-day.jpg",
     alt: "LCT Universal Executive Mini Coach, full side profile in daylight",
-    objectPositionDesktop: "50% 45%",
-    objectPositionMobile: "50% 42%",
+    objectPositionDesktop: "38% 45%",
+    objectPositionMobile: "35% 42%",
     aspectRatio: "3 / 2",
     notes:
-      "Added 2026-08-07, source IMG_1500.HEIC — a second, distinct new coach photograph (not a crop of the hero photo) for the HorizontalJourney fleet slide, so the site now has 3 genuinely different bus photographs rather than 3 crops of one. RECLASSIFIED 2026-08-08: same vehicle as `fleetCoach` — a Mini Coach, not a full-size motorcoach. See that key's notes.",
+      "Added 2026-08-07, source IMG_1500.HEIC — for the homepage HorizontalJourney fleet slide. Same source photo as `fleetCoach` (see that key's 2026-08-11 note for why) — given a different horizontal crop/emphasis (frames toward the bus's front/branding rather than `fleetCoach`'s frame toward the open door) so the two placements, on different pages, don't read as an identical repeated shot.",
   },
   groupCoachStory: {
     src: "/assets/official/group-coach-bus.jpg",
@@ -329,6 +341,163 @@ export const IMAGES = {
     objectPositionMobile: "50% 40%",
     aspectRatio: "3 / 2",
     notes: "Source DSC01855.JPG",
+  },
+  joinTeamDriver: {
+    // Media replacement 2026-08-11 (round 2) — round 1's
+    // chauffeur-sclass-portrait.jpg was disqualified per explicit client
+    // instruction: cards must use media never used anywhere on the site,
+    // including in the round-1 Join Our Team pass itself. Full re-audit of
+    // every media file in the project (public/assets, public/assets/official,
+    // src/assets, src/assets/lct*/*.asset.json sidecars — confirmed
+    // dead/unimported by no component importing from those directories,
+    // plus 3 previously-unchecked Instagram video exports) found no unused
+    // person-forward chauffeur photo that wasn't either a confirmed stock
+    // photo (iStock/Shutterstock-style filenames: "male-chauffeur-...-utc.jpg",
+    // studio lighting) or a near-duplicate frame from the same photoshoot
+    // session as an already-used image (DSC01240.jpg/DSC01431 — same
+    // chauffeur, suit, and downtown block as chauffeur-door-service-v2.jpg /
+    // hero-sclass-chauffeur.jpg). This image — a tight, dramatic front
+    // three-quarter shot of the black S-Class with no person — was unused
+    // anywhere (public/assets/official/sedan-virgin-hotels-single.jpg,
+    // previously untouched by any component), copied to join-driver.jpg.
+    // Source is an unusually narrow portrait crop (880×2134, ~0.41:1) —
+    // width-bound against this card's 4:3 container (full width always
+    // shows; only vertical position has any effect) — verified via the
+    // actual rendered crop, not assumed. Vertical position tuned from an
+    // initial 62% (bare grille, hood ornament cropped out) down to 48%/50%
+    // after a 5-way side-by-side comparison, so the Mercedes star, full
+    // grille, and headlight light-line stay together in frame.
+    src: "/assets/official/join-driver.jpg",
+    alt: "LCT Universal Mercedes-Benz S-Class, front three-quarter view",
+    objectPositionDesktop: "50% 48%",
+    objectPositionMobile: "50% 50%",
+    aspectRatio: "880 / 2134",
+    notes: "Replaces round 1's chauffeur-sclass-portrait.jpg, disqualified for having already been used in the round-1 Join Our Team pass.",
+  },
+  joinTeamPartner: {
+    // Media replacement 2026-08-11 (round 2) — see joinTeamDriver's note for
+    // why round 1's fleet-lineup-dusk.jpg was disqualified (already used
+    // within round 1 itself). Client specifically identified this photo by
+    // description ("BMW + Cadillac near Globe Life Field") as a strong
+    // Company Partners candidate. Real, previously-unused-anywhere photo —
+    // public/assets/official/events-fleet-stadium.jpg, superseded by
+    // events-stadium-v2.jpg for the /events page in an earlier round and
+    // left unreferenced since — copied to join-company-partners.jpg. Two
+    // distinct vehicles (BMW 7 Series, Cadillac Escalade) in the Texas
+    // Live!/Globe Life Field entertainment district. Source 2000×1333
+    // (3:2), mildly height-bound against the 4:3 container (full height
+    // always shows, ~11% of width crops) — verified via rendered screenshot.
+    src: "/assets/official/join-company-partners.jpg",
+    alt: "LCT Universal executive vehicles — BMW 7 Series and Cadillac Escalade — near Globe Life Field, Arlington",
+    objectPositionDesktop: "48% 55%",
+    objectPositionMobile: "46% 55%",
+    aspectRatio: "3 / 2",
+    notes: "Replaces round 1's fleet-lineup-dusk.jpg, disqualified for reuse within the same Join Our Team section.",
+  },
+  joinTeamReferral: {
+    // Media replacement 2026-08-11 (round 2) — see joinTeamDriver's note.
+    // Client specifically identified this photo by description ("nighttime
+    // hotel image with Mercedes S-Class and SUV") as a strong Referral
+    // Partner candidate. Real, previously-unused-anywhere photo — a raw,
+    // unprocessed file at public/assets/IMG_9612.JPEG (The Westin hotel
+    // porte-cochère at night, S-Class in front of a second SUV) — re-encoded
+    // via canvas (bakes in the EXIF rotation, resized to a 1600px long edge
+    // for web weight: 3.6MB → 265KB) and saved as
+    // public/assets/official/join-referral-partner.jpg. A premium
+    // hotel-arrival moment reads as "VIP client experience," genuinely
+    // distinct from joinTeamDriver's single-car close-up and
+    // joinTeamPartner's daylight multi-vehicle fleet shot. Source is
+    // portrait (2:3 after rotation) — width-bound against the 4:3 container
+    // (full width always shows, ~50% of height crops), so the vertical
+    // position was weighted down toward the vehicles rather than the
+    // ceiling lighting — verified via rendered screenshot.
+    src: "/assets/official/join-referral-partner.jpg",
+    alt: "LCT Universal Mercedes-Benz S-Class and SUV at The Westin hotel entrance at night",
+    objectPositionDesktop: "50% 68%",
+    objectPositionMobile: "50% 70%",
+    aspectRatio: "2 / 3",
+    notes: "Replaces round 1's hero-sclass-chauffeur.jpg, disqualified for reuse within the same Join Our Team section.",
+  },
+  /** Blog hero/card imagery — added 2026-08-12 for the Insights section. Wide 3:2 sources chosen for a 16:9-ish editorial hero + 4:3 index card, each used by exactly one article so no two posts share a hero. */
+  blogAirport: {
+    src: "/assets/official/airport-dfw-highway.jpg",
+    alt: "Highway signage for DFW International Airport",
+    objectPositionDesktop: "50% 45%",
+    objectPositionMobile: "50% 42%",
+    aspectRatio: "3 / 2",
+    notes: "Previously unused (superseded by airport-dfw-sign-silver.jpg for the /airport page). Used for the DFW Airport Transportation article.",
+  },
+  blogLoveField: {
+    src: "/assets/official/airport-dfw-sign-red.jpg",
+    alt: "The red DFW monument sign marking the gateway to Dallas–Fort Worth",
+    objectPositionDesktop: "50% 45%",
+    objectPositionMobile: "60% 42%",
+    aspectRatio: "3 / 2",
+    notes: "Reused from airportGateway (a distinct DFW sign photo from the one used on /airport itself) for the Love Field vs. DFW article — airport-themed but a different composition from blogAirport.",
+  },
+  blogExecutiveCar: {
+    src: "/assets/official/hero-sclass-chauffeur.jpg",
+    alt: "LCT Universal chauffeur and executive vehicle in a downtown Dallas business district",
+    objectPositionDesktop: "38% 45%",
+    objectPositionMobile: "40% 42%",
+    aspectRatio: "3 / 2",
+    notes: "Orphaned after the Join Our Team round-2 media swap (previously joinTeamReferral) — reused here for the Executive Car Service article.",
+  },
+  blogBooking: {
+    src: "/assets/official/sedan-front-grille.jpg",
+    alt: "Close-up of a Mercedes-Benz S-Class front grille and hood ornament",
+    objectPositionDesktop: "50% 45%",
+    objectPositionMobile: "50% 45%",
+    aspectRatio: "3 / 2",
+    notes: "Previously unused. Used for the What to Consider When Booking article.",
+  },
+  blogCorporate: {
+    src: "/assets/official/fleet-lineup-dusk.jpg",
+    alt: "LCT Universal fleet lineup — Cadillac Escalade, Mercedes-Benz S-Class, BMW 7 Series, and GMC Yukon Denali at dusk with the Dallas skyline",
+    objectPositionDesktop: "50% 50%",
+    objectPositionMobile: "50% 50%",
+    aspectRatio: "2651 / 1103",
+    notes: "Orphaned after the Join Our Team round-2 media swap (previously joinTeamPartner) — reused here for the Corporate Transportation Planning article.",
+  },
+  blogSprinter: {
+    src: "/assets/official/sprinter-exterior.jpg",
+    alt: "Executive Sprinter — Mercedes-Benz Sprinter van, exterior",
+    objectPositionDesktop: "45% 50%",
+    objectPositionMobile: "50% 50%",
+    aspectRatio: "3 / 2",
+    notes: "Reused from fleetSprinter for the Sprinter Van group-transportation article — same vehicle class the article is about.",
+  },
+  blogCoach: {
+    src: "/assets/official/group-coach-bus.jpg",
+    alt: "LCT Universal chauffeur beside the full-size executive motorcoach for group transportation",
+    objectPositionDesktop: "38% 42%",
+    objectPositionMobile: "45% 40%",
+    aspectRatio: "3 / 2",
+    notes: "Reused from groupCoachStory for the Mini Coach vs. Motor Coach comparison article.",
+  },
+  blogEvents: {
+    src: "/assets/official/events-stadium-v2.jpg",
+    alt: "LCT Universal executive vehicles near Globe Life Field, Dallas–Fort Worth",
+    objectPositionDesktop: "50% 48%",
+    objectPositionMobile: "55% 45%",
+    aspectRatio: "3 / 2",
+    notes: "Reused from events for the Corporate Events transportation-planning article.",
+  },
+  blogChauffeur: {
+    src: "/assets/official/chauffeur-door-service.jpg",
+    alt: "LCT Universal chauffeur in white gloves opening the door of an executive sedan",
+    objectPositionDesktop: "55% 25%",
+    objectPositionMobile: "55% 22%",
+    aspectRatio: "2 / 3",
+    notes: "Previously unused (the v1 door-service photo — v2 is used elsewhere for the `chauffeur`/`bookingCta` keys). Used for the Chauffeur Service Standards article.",
+  },
+  blogMeetGreet: {
+    src: "/assets/official/sedan-virgin-hotels.jpg",
+    alt: "LCT Universal Mercedes-Benz S-Class arriving at a hotel entrance",
+    objectPositionDesktop: "50% 45%",
+    objectPositionMobile: "50% 42%",
+    aspectRatio: "1600 / 2134",
+    notes: "Previously unused. Used for the Airport Meet-and-Greet article.",
   },
   /** Do not use as primary brand visual */
   legacyStretchLimo: {

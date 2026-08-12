@@ -116,6 +116,291 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_applications: {
+        Row: {
+          background_check_consent: boolean
+          certification_consent: boolean
+          chauffeur_experience: string
+          city: string | null
+          client_token: string | null
+          country: string | null
+          created_at: string
+          data_consent: boolean
+          dui_past_5_years: string
+          email: string
+          employment_terms_ack: boolean
+          felony_conviction: string
+          full_name: string
+          headshot_path: string
+          id: string
+          ip_hash: string | null
+          license_back_path: string
+          license_front_path: string
+          phone: string
+          postal_code: string | null
+          raw_payload: Json | null
+          screening_notice_ack: boolean
+          source_page: string | null
+          state: string | null
+          status: string
+          street_address: string | null
+          transportation_license_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          background_check_consent?: boolean
+          certification_consent?: boolean
+          chauffeur_experience: string
+          city?: string | null
+          client_token?: string | null
+          country?: string | null
+          created_at?: string
+          data_consent?: boolean
+          dui_past_5_years: string
+          email: string
+          employment_terms_ack?: boolean
+          felony_conviction: string
+          full_name: string
+          headshot_path: string
+          id?: string
+          ip_hash?: string | null
+          license_back_path: string
+          license_front_path: string
+          phone: string
+          postal_code?: string | null
+          raw_payload?: Json | null
+          screening_notice_ack?: boolean
+          source_page?: string | null
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          transportation_license_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          background_check_consent?: boolean
+          certification_consent?: boolean
+          chauffeur_experience?: string
+          city?: string | null
+          client_token?: string | null
+          country?: string | null
+          created_at?: string
+          data_consent?: boolean
+          dui_past_5_years?: string
+          email?: string
+          employment_terms_ack?: boolean
+          felony_conviction?: string
+          full_name?: string
+          headshot_path?: string
+          id?: string
+          ip_hash?: string | null
+          license_back_path?: string
+          license_front_path?: string
+          phone?: string
+          postal_code?: string | null
+          raw_payload?: Json | null
+          screening_notice_ack?: boolean
+          source_page?: string | null
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          transportation_license_path?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_partner_applications: {
+        Row: {
+          active_drivers: string | null
+          business_license_path: string | null
+          certification_ack: boolean
+          city: string | null
+          client_token: string | null
+          company_email: string | null
+          company_name: string | null
+          company_phone: string | null
+          contact_consent_ack: boolean
+          country: string | null
+          created_at: string
+          ein_letter_path: string | null
+          email: string
+          fleet_description: string | null
+          fleet_vehicle_count: string | null
+          full_name: string
+          id: string
+          insurance_cert_path: string | null
+          ip_hash: string | null
+          job_title: string | null
+          no_partnership_disclaimer_ack: boolean
+          operating_permit_path: string | null
+          phone: string
+          postal_code: string | null
+          raw_payload: Json | null
+          source_page: string | null
+          state: string | null
+          status: string
+          street_address: string | null
+          suit_requirement: string | null
+          updated_at: string
+          website: string | null
+          years_operating: string | null
+        }
+        Insert: {
+          active_drivers?: string | null
+          business_license_path?: string | null
+          certification_ack?: boolean
+          city?: string | null
+          client_token?: string | null
+          company_email?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          contact_consent_ack?: boolean
+          country?: string | null
+          created_at?: string
+          ein_letter_path?: string | null
+          email: string
+          fleet_description?: string | null
+          fleet_vehicle_count?: string | null
+          full_name: string
+          id?: string
+          insurance_cert_path?: string | null
+          ip_hash?: string | null
+          job_title?: string | null
+          no_partnership_disclaimer_ack?: boolean
+          operating_permit_path?: string | null
+          phone: string
+          postal_code?: string | null
+          raw_payload?: Json | null
+          source_page?: string | null
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          suit_requirement?: string | null
+          updated_at?: string
+          website?: string | null
+          years_operating?: string | null
+        }
+        Update: {
+          active_drivers?: string | null
+          business_license_path?: string | null
+          certification_ack?: boolean
+          city?: string | null
+          client_token?: string | null
+          company_email?: string | null
+          company_name?: string | null
+          company_phone?: string | null
+          contact_consent_ack?: boolean
+          country?: string | null
+          created_at?: string
+          ein_letter_path?: string | null
+          email?: string
+          fleet_description?: string | null
+          fleet_vehicle_count?: string | null
+          full_name?: string
+          id?: string
+          insurance_cert_path?: string | null
+          ip_hash?: string | null
+          job_title?: string | null
+          no_partnership_disclaimer_ack?: boolean
+          operating_permit_path?: string | null
+          phone?: string
+          postal_code?: string | null
+          raw_payload?: Json | null
+          source_page?: string | null
+          state?: string | null
+          status?: string
+          street_address?: string | null
+          suit_requirement?: string | null
+          updated_at?: string
+          website?: string | null
+          years_operating?: string | null
+        }
+        Relationships: []
+      }
+      referral_partner_applications: {
+        Row: {
+          agreement_ack_1: boolean
+          agreement_ack_2: boolean
+          applicant_type: string
+          city: string
+          client_token: string | null
+          company_brand_name: string | null
+          country: string
+          created_at: string
+          email: string
+          estimated_referrals: string
+          facebook: string | null
+          full_name: string
+          id: string
+          instagram: string | null
+          ip_hash: string | null
+          linkedin: string | null
+          other_platform: string | null
+          phone: string
+          preferred_payment: string | null
+          raw_payload: Json | null
+          referral_method: string
+          source_page: string | null
+          status: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          agreement_ack_1?: boolean
+          agreement_ack_2?: boolean
+          applicant_type: string
+          city: string
+          client_token?: string | null
+          company_brand_name?: string | null
+          country: string
+          created_at?: string
+          email: string
+          estimated_referrals: string
+          facebook?: string | null
+          full_name: string
+          id?: string
+          instagram?: string | null
+          ip_hash?: string | null
+          linkedin?: string | null
+          other_platform?: string | null
+          phone: string
+          preferred_payment?: string | null
+          raw_payload?: Json | null
+          referral_method: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          agreement_ack_1?: boolean
+          agreement_ack_2?: boolean
+          applicant_type?: string
+          city?: string
+          client_token?: string | null
+          company_brand_name?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          estimated_referrals?: string
+          facebook?: string | null
+          full_name?: string
+          id?: string
+          instagram?: string | null
+          ip_hash?: string | null
+          linkedin?: string | null
+          other_platform?: string | null
+          phone?: string
+          preferred_payment?: string | null
+          raw_payload?: Json | null
+          referral_method?: string
+          source_page?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

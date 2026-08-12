@@ -96,6 +96,11 @@ export const track = {
   fleetVehicleBookClick: (vehicle: string) => trackEvent("fleet_vehicle_book_click", { vehicle }),
   fleetVehicleQuoteClick: (vehicle: string) => trackEvent("fleet_vehicle_quote_click", { vehicle }),
   fleetCallDispatchClick: () => trackEvent("fleet_call_dispatch_click"),
+  // AI Concierge — high-level engagement only, never message content (no
+  // user input or assistant reply text is ever passed to analytics).
+  aiConciergeOpen: (source: string) => trackEvent("ai_concierge_open", { source }),
+  aiActionBookClicked: () => trackEvent("ai_action_book_clicked"),
+  aiActionContactClicked: () => trackEvent("ai_action_contact_clicked"),
   /** Ready for a real Ads conversion label the moment one is provided — not called anywhere yet. */
   adsConversion: (conversionLabel: string, value?: number) =>
     trackEvent("conversion", { send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`, value }),

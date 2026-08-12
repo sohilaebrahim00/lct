@@ -13,6 +13,8 @@ const EXPLORE_LINKS: FooterLink[] = [
   { to: "/reviews", label: "Reviews" },
   { to: "/service-areas", label: "Service Areas" },
   { to: "/faq", label: "FAQ" },
+  { to: "/join-our-team", label: "Join Our Team" },
+  { to: "/blog", label: "Insights" },
 ];
 
 const SERVICES_LINKS: FooterLink[] = [

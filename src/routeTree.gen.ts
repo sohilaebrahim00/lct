@@ -19,6 +19,7 @@ import { Route as CorporateRouteImport } from './routes/corporate'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as JoinOurTeamRouteImport } from './routes/join-our-team'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RatesRouteImport } from './routes/rates'
 import { Route as ReviewsRouteImport } from './routes/reviews'
@@ -26,6 +27,8 @@ import { Route as ServiceAreasRouteImport } from './routes/service-areas'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ZeroToleranceRouteImport } from './routes/zero-tolerance'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -77,6 +80,11 @@ const FleetRoute = FleetRouteImport.update({
   path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JoinOurTeamRoute = JoinOurTeamRouteImport.update({
+  id: '/join-our-team',
+  path: '/join-our-team',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -112,6 +120,16 @@ const ZeroToleranceRoute = ZeroToleranceRouteImport.update({
   path: '/zero-tolerance',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -124,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
+  '/join-our-team': typeof JoinOurTeamRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
@@ -131,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
   '/zero-tolerance': typeof ZeroToleranceRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -143,6 +164,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
+  '/join-our-team': typeof JoinOurTeamRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
@@ -150,6 +172,8 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
   '/zero-tolerance': typeof ZeroToleranceRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog': typeof BlogIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -163,6 +187,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/faq': typeof FaqRoute
   '/fleet': typeof FleetRoute
+  '/join-our-team': typeof JoinOurTeamRoute
   '/privacy': typeof PrivacyRoute
   '/rates': typeof RatesRoute
   '/reviews': typeof ReviewsRoute
@@ -170,6 +195,8 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/terms': typeof TermsRoute
   '/zero-tolerance': typeof ZeroToleranceRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -184,6 +211,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fleet'
+    | '/join-our-team'
     | '/privacy'
     | '/rates'
     | '/reviews'
@@ -191,6 +219,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/terms'
     | '/zero-tolerance'
+    | '/blog/$slug'
+    | '/blog/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -203,6 +233,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fleet'
+    | '/join-our-team'
     | '/privacy'
     | '/rates'
     | '/reviews'
@@ -210,6 +241,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/terms'
     | '/zero-tolerance'
+    | '/blog/$slug'
+    | '/blog'
   id:
     | '__root__'
     | '/'
@@ -222,6 +255,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/faq'
     | '/fleet'
+    | '/join-our-team'
     | '/privacy'
     | '/rates'
     | '/reviews'
@@ -229,6 +263,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/terms'
     | '/zero-tolerance'
+    | '/blog/$slug'
+    | '/blog/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -242,6 +278,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   FaqRoute: typeof FaqRoute
   FleetRoute: typeof FleetRoute
+  JoinOurTeamRoute: typeof JoinOurTeamRoute
   PrivacyRoute: typeof PrivacyRoute
   RatesRoute: typeof RatesRoute
   ReviewsRoute: typeof ReviewsRoute
@@ -249,6 +286,8 @@ export interface RootRouteChildren {
   ServicesRoute: typeof ServicesRoute
   TermsRoute: typeof TermsRoute
   ZeroToleranceRoute: typeof ZeroToleranceRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -323,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FleetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/join-our-team': {
+      id: '/join-our-team'
+      path: '/join-our-team'
+      fullPath: '/join-our-team'
+      preLoaderRoute: typeof JoinOurTeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -372,6 +418,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ZeroToleranceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -386,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   FaqRoute: FaqRoute,
   FleetRoute: FleetRoute,
+  JoinOurTeamRoute: JoinOurTeamRoute,
   PrivacyRoute: PrivacyRoute,
   RatesRoute: RatesRoute,
   ReviewsRoute: ReviewsRoute,
@@ -393,6 +454,8 @@ const rootRouteChildren: RootRouteChildren = {
   ServicesRoute: ServicesRoute,
   TermsRoute: TermsRoute,
   ZeroToleranceRoute: ZeroToleranceRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -16,11 +16,14 @@ function isGroup(entry: NavEntry): entry is NavGroup {
 /**
  * Desktop mega-menu / mobile accordion structure — replaces the previous
  * flat 8-item `NAV_LINKS` row. Every `to` here is a real, verified route
- * (cross-checked against the router, not assumed) — "Join Our Team" is
- * deliberately absent because that route doesn't exist yet. Group Transportation
+ * (cross-checked against the router, not assumed). Group Transportation
  * has no standalone route, so (matching the footer's own already-approved
  * precedent) it points at `/fleet` alongside Fleet's own "Fleet Overview" —
  * an intentional dual entry point, not an accidental duplicate.
+ * "Join Our Team" (added 2026-08-11) lives under Company, not as a
+ * top-level item — it's a real destination but not a booking-adjacent one,
+ * so it shouldn't compete visually with the primary nav row or the
+ * "Book Now" CTA per explicit client instruction.
  */
 const NAV_ENTRIES: NavEntry[] = [
   { to: "/", label: "Home" },
@@ -45,12 +48,14 @@ const NAV_ENTRIES: NavEntry[] = [
   },
   {
     label: "Company",
-    matchPaths: ["/about", "/reviews", "/service-areas", "/faq"],
+    matchPaths: ["/about", "/reviews", "/service-areas", "/faq", "/join-our-team", "/blog"],
     items: [
       { to: "/about", label: "About" },
       { to: "/reviews", label: "Reviews" },
       { to: "/service-areas", label: "Service Areas" },
       { to: "/faq", label: "FAQ" },
+      { to: "/join-our-team", label: "Join Our Team" },
+      { to: "/blog", label: "Insights" },
     ],
   },
   {

@@ -4,6 +4,7 @@ import { SiteFooter } from "./site-footer";
 import { FloatingActions } from "./floating-actions";
 import { MobileBookBar } from "./mobile-book-bar";
 import { ScrollProgress } from "./luxury/scroll-progress";
+import { ConciergeLauncher } from "./concierge/concierge-launcher";
 import { ensureGsap, prefersReducedMotion } from "@/lib/motion";
 import { revealLines, revealClipImage } from "@/lib/reveal";
 
@@ -16,6 +17,7 @@ export function SiteLayout({ children }: { children: ReactNode }) {
       <SiteFooter />
       <FloatingActions />
       <MobileBookBar />
+      <ConciergeLauncher />
     </div>
   );
 }

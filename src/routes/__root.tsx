@@ -6,7 +6,7 @@ import { RouteTransition } from "@/components/route-transition";
 import { Cursor } from "@/components/luxury/cursor";
 import { MyLimoBizWidgetHost } from "@/components/booking/mylimobiz-widget";
 import { Analytics } from "@/components/analytics";
-import { COMPANY, CONTACT } from "@/lib/site-data";
+import { COMPANY, CONTACT, SERVICE_AREA_GROUPS } from "@/lib/site-data";
 
 function NotFoundComponent() {
   // A static-hosted SPA fallback (see public/.htaccess) always serves this
@@ -165,7 +165,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
             postalCode: CONTACT.zip,
             addressCountry: "US",
           },
-          areaServed: CONTACT.serviceRegion,
+          // Updated 2026-08-11 — was a single free-text string
+          // (CONTACT.serviceRegion); the client explicitly asked for the
+          // full DFW Metroplex coverage list to be represented in
+          // structured data via `areaServed`. An array of real City names
+          // does not claim a physical branch office in each one (that
+          // claim only exists in the single `address` field above, which
+          // is untouched) — schema.org's own guidance is that `areaServed`
+          // states coverage, not location.
+          areaServed: SERVICE_AREA_GROUPS.flatMap((g) => g.cities).map((name) => ({
+            "@type": "City",
+            name,
+          })),
           openingHoursSpecification: {
             "@type": "OpeningHoursSpecification",
             dayOfWeek: [
