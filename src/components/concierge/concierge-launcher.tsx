@@ -1,7 +1,12 @@
-import { lazy, Suspense, useCallback, useId, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { MessageCircle, X } from "lucide-react";
 import { track } from "@/lib/tracking";
+import {
+  getMobileMenuOpenServerSnapshot,
+  getMobileMenuOpenSnapshot,
+  subscribeMobileMenuOpen,
+} from "@/lib/mobile-menu-state";
 
 // The chat panel (Supabase client call, message list, quick actions) is not
 // needed until the visitor actually opens the concierge — lazy-loaded on
@@ -14,6 +19,7 @@ export function ConciergeLauncher() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const launcherRef = useRef<HTMLButtonElement>(null);
   const dialogId = useId();
+  const menuOpen = useSyncExternalStore(subscribeMobileMenuOpen, getMobileMenuOpenSnapshot, getMobileMenuOpenServerSnapshot);
 
   const closePanel = useCallback(() => {
     setOpen(false);
@@ -24,6 +30,15 @@ export function ConciergeLauncher() {
     setOpen(true);
     track.aiConciergeOpen(pathname);
   };
+
+  // Hide the launcher (and close the panel, if a visitor somehow had it
+  // open) while the mobile nav menu is open — the two must never compete
+  // for the same screen real estate.
+  useEffect(() => {
+    if (menuOpen && open) setOpen(false);
+  }, [menuOpen, open]);
+
+  if (menuOpen) return null;
 
   return (
     <>

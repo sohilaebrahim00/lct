@@ -1,5 +1,11 @@
 import { useRouterState } from "@tanstack/react-router";
+import { useSyncExternalStore } from "react";
 import { CONTACT } from "@/lib/site-data";
+import {
+  getMobileMenuOpenServerSnapshot,
+  getMobileMenuOpenSnapshot,
+  subscribeMobileMenuOpen,
+} from "@/lib/mobile-menu-state";
 
 /**
  * Floating call & WhatsApp actions.
@@ -7,10 +13,13 @@ import { CONTACT } from "@/lib/site-data";
  */
 export function FloatingActions() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const menuOpen = useSyncExternalStore(subscribeMobileMenuOpen, getMobileMenuOpenSnapshot, getMobileMenuOpenServerSnapshot);
   // /fleet has its own 64px sticky conversion bar (desktop + mobile, not just
   // mobile like MobileBookBar) — shift up on both breakpoints there so the
   // FABs never sit on top of it.
   const onFleet = pathname === "/fleet";
+
+  if (menuOpen) return null;
 
   return (
     <div

@@ -216,7 +216,7 @@ function Services() {
             {CHAPTERS.map((c) => (
               <div
                 key={c.id}
-                className="service-chapter flex min-h-[62vh] flex-col justify-center border-b border-border/50 py-10 last:border-b-0 lg:min-h-[70vh]"
+                className="service-chapter flex flex-col border-b border-border/50 py-10 last:border-b-0 lg:min-h-[70vh] lg:justify-center"
               >
                 <h2 className="service-chapter-title font-display text-3xl leading-tight transition-colors duration-500 md:text-5xl">
                   {c.title}

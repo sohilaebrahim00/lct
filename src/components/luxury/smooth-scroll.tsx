@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { setLenisInstance } from "@/lib/lenis-instance";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,10 +26,12 @@ export function SmoothScroll() {
     };
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);
+    setLenisInstance(lenis);
 
     return () => {
       gsap.ticker.remove(raf);
       lenis.destroy();
+      setLenisInstance(null);
     };
   }, []);
 

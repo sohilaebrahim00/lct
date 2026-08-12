@@ -71,6 +71,17 @@ export function useMyLimoBizStatus() {
 
 let scriptRequested = false;
 
+/**
+ * Exported so other MyLimoBiz widget anchors (e.g. the header/footer
+ * "Client Login" button) can trigger the same one-time script load instead
+ * of injecting `widget-loader.js` a second time. Safe to call from multiple
+ * components — the `scriptRequested` guard below makes every call after the
+ * first a no-op.
+ */
+export function ensureMyLimoBizScript() {
+  ensureScriptRequested();
+}
+
 function ensureScriptRequested() {
   if (scriptRequested) return;
   scriptRequested = true;

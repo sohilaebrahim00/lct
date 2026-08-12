@@ -241,6 +241,58 @@ function FleetConversionBar({
   );
 }
 
+/**
+ * Mobile-only "swipe to explore" strip — added per explicit client feedback
+ * that 7 full-bleed vehicle chapters stacking straight down felt like "a
+ * long amateur-looking page" on mobile. Does NOT restructure the chapters
+ * themselves (each remains a normal stacked `<section>`): the sticky
+ * `FleetConversionBar` below tracks "current chapter" via an
+ * `IntersectionObserver` keyed to vertical scroll position, and every
+ * chapter has its own GSAP `ScrollTrigger` reveal timeline — both would
+ * break if chapters were converted into actual horizontal-scroll slides.
+ * Instead, this is a purely additive native scroll-snap filmstrip (same
+ * technique as the existing `/events` "drag to explore" gallery) that lets
+ * a visitor preview all 7 vehicles up front and tap one to smooth-scroll
+ * straight to its full chapter — desktop is completely unaffected (`lg:hidden`).
+ */
+function MobileFleetShowcase({ vehicles }: { vehicles: readonly FleetVehicle[] }) {
+  return (
+    <section className="border-b border-border py-8 lg:hidden">
+      <div className="mb-4 px-6">
+        <span className="eyebrow">Swipe to explore the fleet</span>
+      </div>
+      <div className="scrollbar-none flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2">
+        {vehicles.map((v) => {
+          const img = IMAGES[v.imageKey];
+          return (
+            <a
+              key={v.id}
+              href={`#fleet-${v.id}`}
+              data-cursor="explore"
+              className="group relative aspect-[3/4] w-[62vw] shrink-0 snap-start overflow-hidden rounded-sm sm:w-[42vw]"
+            >
+              <img
+                src={img.src}
+                alt={img.alt}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition duration-500 group-active:scale-105 [object-position:var(--img-pos-m)]"
+                style={{ "--img-pos-m": img.objectPositionMobile } as CSSProperties}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <div className="font-display text-lg leading-tight text-off-white">{v.name}</div>
+                <div className="mt-1 text-xs text-off-white/75">
+                  {v.pax} passengers · {v.priceLabel}
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function Fleet() {
   // Looked up by id, not array position — FLEET_VEHICLES grew from 5 to 7
   // entries (2026-08-08 fleet/pricing audit) and positional indices would
@@ -440,9 +492,11 @@ function Fleet() {
         <FleetWheelAccent />
       </div>
 
+      <MobileFleetShowcase vehicles={FLEET_VEHICLES} />
+
       <div ref={rootRef}>
         {/* Chapter 1 — Sedan: full-bleed vehicle-first reveal, text in lower-left negative space */}
-        <section className="ch-sedan relative overflow-hidden" data-vehicle-chapter="sedan">
+        <section id="fleet-sedan" className="ch-sedan relative overflow-hidden" data-vehicle-chapter="sedan">
           <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
             <img
               src={IMAGES.fleetSedan.src}
@@ -491,7 +545,7 @@ function Fleet() {
         {/* Chapter 1b — First Class Sedan: same full-bleed template as Sedan
             (same verified S-Class, different real photograph — a white-glove
             chauffeur portrait rather than the exterior valet shot). */}
-        <section className="ch-fcs relative overflow-hidden border-t border-border" data-vehicle-chapter="firstClassSedan">
+        <section id="fleet-firstClassSedan" className="ch-fcs relative overflow-hidden border-t border-border" data-vehicle-chapter="firstClassSedan">
           <div className="relative aspect-[16/9] w-full md:aspect-[21/9]">
             <img
               src={IMAGES.fleetFirstClassSedan.src}
@@ -538,7 +592,7 @@ function Fleet() {
         </section>
 
         {/* Chapter 2 — SUV: split spotlight specification panel */}
-        <section className="ch-suv border-t border-border" data-vehicle-chapter="suv">
+        <section id="fleet-suv" className="ch-suv border-t border-border" data-vehicle-chapter="suv">
           <div className="mx-auto grid max-w-[var(--container-max)] gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-28">
             <div className="ch-suv-media relative overflow-hidden rounded-sm luxe-card">
               <img
@@ -573,7 +627,7 @@ function Fleet() {
             and copy columns swapped so the adjacent pair doesn't feel
             copy-pasted (same verified Escalade, different real photograph —
             rear 3/4 vs. SUV's front 3/4). */}
-        <section className="ch-lsuv border-t border-border" data-vehicle-chapter="luxurySuv">
+        <section id="fleet-luxurySuv" className="ch-lsuv border-t border-border" data-vehicle-chapter="luxurySuv">
           <div className="mx-auto grid max-w-[var(--container-max)] gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-28">
             <div className="ch-lsuv-copy order-2 rounded-sm border border-border/60 bg-[color:var(--surface-elevated)]/40 p-8 lg:order-1">
               <div className="eyebrow">{luxurySuv.model}</div>
@@ -606,6 +660,7 @@ function Fleet() {
 
         {/* Chapter 3 — Sprinter: asymmetric inset image, oversized type */}
         <section
+          id="fleet-sprinter"
           className="ch-sprinter relative overflow-hidden border-t border-border py-20 lg:py-28"
           data-vehicle-chapter="sprinter"
         >
@@ -660,7 +715,7 @@ function Fleet() {
         </section>
 
         {/* Chapter 4 — Executive Mini Coach: wide panoramic banner */}
-        <section className="ch-coach relative overflow-hidden border-t border-border" data-vehicle-chapter="coachMini">
+        <section id="fleet-coachMini" className="ch-coach relative overflow-hidden border-t border-border" data-vehicle-chapter="coachMini">
           <div className="ch-coach-media relative aspect-[16/9] w-full overflow-hidden md:aspect-[24/9]">
             <img
               src={IMAGES.fleetCoach.src}
@@ -696,6 +751,7 @@ function Fleet() {
 
         {/* Chapter 5 — Executive Coach: wide panoramic banner, full-size motorcoach */}
         <section
+          id="fleet-coachLarge"
           className="ch-coach-large relative overflow-hidden border-t border-border"
           data-vehicle-chapter="coachLarge"
         >

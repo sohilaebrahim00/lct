@@ -3,6 +3,7 @@ import { ArrowRight, Phone } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { COMPANY, CONTACT } from "@/lib/site-data";
 import { SocialLinks } from "@/components/social-links";
+import { MyLimoBizLoginPopover } from "@/components/booking/mylimobiz-login-popover";
 
 type FooterLink = { to: string; label: string; external?: boolean };
 
@@ -130,6 +131,9 @@ export function SiteFooter() {
                   <a href={CONTACT.emailMailto} className="break-all transition hover:text-champagne">
                     {CONTACT.email}
                   </a>
+                </li>
+                <li>
+                  <MyLimoBizLoginPopover panelAlign="left" triggerClassName="inline-flex items-center gap-1.5 transition hover:text-champagne" />
                 </li>
               </ul>
             </div>

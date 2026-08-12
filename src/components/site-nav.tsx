@@ -4,6 +4,9 @@ import { Menu, Phone, X, ChevronDown } from "lucide-react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { Logo } from "@/components/logo";
 import { CONTACT } from "@/lib/site-data";
+import { setMobileMenuOpen } from "@/lib/mobile-menu-state";
+import { startLenis, stopLenis } from "@/lib/lenis-instance";
+import { MyLimoBizLoginPopover } from "@/components/booking/mylimobiz-login-popover";
 
 type NavLeaf = { to: string; label: string };
 type NavGroup = { label: string; items: NavLeaf[]; matchPaths: string[] };
@@ -92,6 +95,14 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Publish open/closed state so the floating WhatsApp/phone/Concierge
+  // buttons and the sticky Book Now bar can hide themselves while the menu
+  // is open — see src/lib/mobile-menu-state.ts.
+  useEffect(() => {
+    setMobileMenuOpen(open);
+    return () => setMobileMenuOpen(false);
+  }, [open]);
+
   const closeMenu = useCallback(() => {
     setOpen(false);
     requestAnimationFrame(() => menuButtonRef.current?.focus());
@@ -101,9 +112,19 @@ export function SiteNav() {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
     const prevPadding = document.body.style.paddingRight;
+    // `document.scrollingElement` is <html>, not <body>, in standard mode —
+    // locking only body.overflow left <html> free to scroll (confirmed via
+    // wheel-scroll testing: the page behind the open menu still scrolled).
+    const prevHtmlOverflow = document.documentElement.style.overflow;
     const scrollbar = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
+    // The CSS overflow lock above only stops native scroll — this site's
+    // Lenis smooth-scroll drives scroll itself via its own rAF loop and
+    // ignores `overflow`, so without this the page behind the menu kept
+    // scrolling on wheel/touch input (confirmed via Playwright wheel test).
+    stopLenis();
 
     // Trap Tab focus inside the open menu panel — without this, tabbing past
     // the last link falls through to <main> content that's hidden behind the
@@ -137,6 +158,8 @@ export function SiteNav() {
     return () => {
       document.body.style.overflow = prevOverflow;
       document.body.style.paddingRight = prevPadding;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      startLenis();
       window.removeEventListener("keydown", onKey);
     };
   }, [open, closeMenu]);
@@ -240,6 +263,10 @@ export function SiteNav() {
               <Phone className="h-4 w-4" aria-hidden />
               <span>{CONTACT.phoneDisplay}</span>
             </a>
+            <MyLimoBizLoginPopover
+              panelAlign="right"
+              triggerClassName="inline-flex items-center gap-1.5 rounded-sm border border-champagne/40 px-4 py-2.5 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-off-white transition hover:border-champagne hover:text-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            />
             <Link
               to="/book"
               data-cursor="book"
@@ -276,7 +303,7 @@ export function SiteNav() {
         hidden={!open}
         className={`fixed inset-0 z-40 lg:hidden ${open ? "" : "pointer-events-none"}`}
       >
-        {open && (
+        {
           <>
             <div className="absolute inset-0 bg-[color:var(--surface-black)]/98 backdrop-blur-2xl" />
             <div
@@ -357,16 +384,21 @@ export function SiteNav() {
                 <p className="text-sm text-muted-foreground">{CONTACT.locationLine}</p>
               </div>
 
+              <MyLimoBizLoginPopover
+                panelAlign="left"
+                triggerClassName="mt-6 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-sm border border-champagne/40 px-6 py-3 text-center text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-off-white transition hover:border-champagne hover:text-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              />
+
               <Link
                 to="/book"
                 onClick={closeMenu}
-                className="mt-10 block rounded-sm bg-gold-gradient px-6 py-4 text-center text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-onyx shadow-[var(--shadow-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                className="mt-4 block rounded-sm bg-gold-gradient px-6 py-4 text-center text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-onyx shadow-[var(--shadow-gold)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 Book Now
               </Link>
             </div>
           </>
-        )}
+        }
       </div>
     </>
   );

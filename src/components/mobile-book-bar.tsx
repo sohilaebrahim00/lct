@@ -1,5 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useSyncExternalStore } from "react";
 import { ArrowRight } from "lucide-react";
+import {
+  getMobileMenuOpenServerSnapshot,
+  getMobileMenuOpenSnapshot,
+  subscribeMobileMenuOpen,
+} from "@/lib/mobile-menu-state";
 
 /**
  * Mobile-only sticky booking CTA — full-width bottom bar, not a floating
@@ -11,7 +17,8 @@ import { ArrowRight } from "lucide-react";
  */
 export function MobileBookBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  if (pathname === "/book" || pathname === "/fleet") return null;
+  const menuOpen = useSyncExternalStore(subscribeMobileMenuOpen, getMobileMenuOpenSnapshot, getMobileMenuOpenServerSnapshot);
+  if (pathname === "/book" || pathname === "/fleet" || menuOpen) return null;
 
   return (
     <div

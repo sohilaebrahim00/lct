@@ -247,11 +247,17 @@ export function CinematicHero() {
           </div>
         </div>
 
-        {/* pr-20 keeps this row clear of the fixed WhatsApp/phone FAB stack
-            (bottom-right, ~56px + margin) on mobile, where this row and the
-            FABs both land near the bottom of the viewport — otherwise the
-            phone FAB visually covers the tail end of "Request a Quote". */}
-        <div className="hero-scroll mt-16 flex items-center gap-6 pr-20 text-xs uppercase tracking-[0.28em] text-off-white/45 lg:pr-0">
+        {/* Hidden below `sm`: on true mobile widths this row sits at the
+            same bottom-of-viewport band as the fixed WhatsApp/phone FABs
+            (bottom-right) and the AI Concierge launcher (bottom-left) —
+            confirmed via screenshot that the concierge button covers the
+            start of the phone number here. The row's own info (phone,
+            "request a quote") is already available via those FABs and the
+            header, so on mobile it's dropped rather than squeezed into an
+            ever-narrower gap between two FAB stacks. pr-20 still guards the
+            sm/md band where the row is visible but the right FAB stack can
+            still reach it. */}
+        <div className="hero-scroll mt-16 hidden items-center gap-6 pr-20 text-xs uppercase tracking-[0.28em] text-off-white/45 sm:flex lg:pr-0">
           <a href={CONTACT.phoneTel} className="transition hover:text-champagne">
             {CONTACT.phoneDisplay}
           </a>
