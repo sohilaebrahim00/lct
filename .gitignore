@@ -20,6 +20,20 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Local secrets — GEMINI_API_KEY and any other real credentials belong in
+# the Netlify dashboard (Site configuration → Environment variables), never
+# in a committed file. `.env` was already tracked before this was added
+# (contains only Supabase's public anon key/URL, not a high-severity
+# secret) — left as-is rather than untracked unilaterally, but no new
+# secret-bearing env file should ever be committed going forward.
+.env
+.env.local
+.env.*.local
+netlify/functions/.env
+
+# Netlify CLI local dev state
+.netlify
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

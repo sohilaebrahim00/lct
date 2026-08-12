@@ -6,6 +6,12 @@
   command = "npm run build"
   publish = "dist"
 
+# AI Concierge backend (see netlify/functions/ai-concierge.js). Reads
+# GEMINI_API_KEY from a Netlify environment variable (Site configuration →
+# Environment variables) — never committed to this repo.
+[functions]
+  directory = "netlify/functions"
+
 # ---------------------------------------------------------------------------
 # SPA fallback — direct loads of /fleet, /corporate, /book, etc. (and a
 # refresh on any of them) must serve index.html so client-side TanStack

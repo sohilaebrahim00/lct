@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 export type ConciergeAction = { label: string; href: string };
 
 export type ConciergeMessage = { role: "user" | "assistant"; content: string };
@@ -22,13 +20,13 @@ const FALLBACK: ConciergeResult = {
 };
 
 /**
- * Calls the `ai-concierge` Edge Function. That function is written and
- * ready but NOT deployed (no Supabase CLI auth in this environment — see
- * PROJECT_SPEC.md), so this call will fail until it is. Failure is handled
- * gracefully — the panel shows the same premium fallback message rather
- * than a broken spinner or a raw error, matching the pattern already
- * established for the Join Our Team Supabase forms before their migration
- * was applied.
+ * Calls the `ai-concierge` Netlify Function (`netlify/functions/ai-concierge.js`)
+ * at `/.netlify/functions/ai-concierge` — same-origin, so no CORS or base-URL
+ * configuration is needed. The Gemini API key lives only in that function's
+ * server-side environment (Netlify dashboard secret), never here. Failure is
+ * handled gracefully — the panel shows the same premium fallback message
+ * rather than a broken spinner or a raw error, whether the function isn't
+ * deployed yet, the network request fails, or Gemini itself errors.
  */
 export async function sendConciergeMessage(
   message: string,
@@ -36,10 +34,14 @@ export async function sendConciergeMessage(
   pagePath: string,
 ): Promise<ConciergeResult> {
   try {
-    const { data, error } = await supabase.functions.invoke("ai-concierge", {
-      body: { message, history: history.slice(-8), pagePath },
+    const res = await fetch("/.netlify/functions/ai-concierge", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, history: history.slice(-8), pagePath }),
     });
-    if (error || !data) return FALLBACK;
+    if (!res.ok) return FALLBACK;
+    const data = await res.json();
+    if (!data) return FALLBACK;
     return {
       message: typeof data.message === "string" ? data.message : FALLBACK.message,
       intent: typeof data.intent === "string" ? data.intent : "general",
