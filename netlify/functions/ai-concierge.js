@@ -17,6 +17,15 @@
  */
 import { buildKnowledgeSummary } from "./ai-concierge-knowledge.js";
 
+// Gemini model — change here if Google deprecates/renames it again (this is
+// the second time: gemini-1.5-flash was retired, then gemini-2.5-flash
+// returned "no longer available to new users"). GEMINI_MODEL_FALLBACK is
+// tried automatically, once, only if the primary model itself 404s as
+// unavailable — not for other errors (an invalid key or rate limit
+// wouldn't be fixed by switching models).
+const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL_FALLBACK = "gemini-2.0-flash-lite";
+
 const KNOWLEDGE = buildKnowledgeSummary();
 
 const SYSTEM_PROMPT = `You are the LCT Universal Executive Transportation Concierge — a knowledgeable assistant for LCT Universal's website, not a human dispatcher and not a generic chatbot.
@@ -38,7 +47,6 @@ Valid hrefs: /book, /fleet, /rates, /airport, /corporate, /events, /service-area
 
 const MAX_MESSAGE_LENGTH = 600;
 const MAX_HISTORY = 8;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 // Minimal in-memory rate limit — resets on cold start, same documented
 // limitation as the earlier Supabase version. A durable limit (e.g. a
@@ -71,12 +79,10 @@ function fallbackResponse(escalate = false) {
   };
 }
 
-async function callGemini(systemPrompt, history, userMessage) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+// Request URL carries `?key=...` — never log it (log status/model/body only).
+async function requestGemini(model, apiKey, systemPrompt, history, userMessage) {
+  return fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -93,11 +99,36 @@ async function callGemini(systemPrompt, history, userMessage) {
       }),
     },
   );
+}
+
+async function callGemini(systemPrompt, history, userMessage) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
+
+  let model = GEMINI_MODEL;
+  let res = await requestGemini(model, apiKey, systemPrompt, history, userMessage);
+
+  // A 404 here means the model itself is unavailable (retired, renamed, or
+  // not enabled for this key/tier) — retry once with the fallback model.
+  // Any other status (401/429/etc.) wouldn't be fixed by switching models,
+  // so it falls through to the error handling below instead.
+  if (res.status === 404) {
+    const primaryErrorBody = await res.text().catch(() => "<unreadable response body>");
+    console.error("[ai-concierge] Gemini primary model unavailable, retrying with fallback:", {
+      status: res.status,
+      model,
+      fallbackModel: GEMINI_MODEL_FALLBACK,
+      body: primaryErrorBody,
+    });
+    model = GEMINI_MODEL_FALLBACK;
+    res = await requestGemini(model, apiKey, systemPrompt, history, userMessage);
+  }
+
   if (!res.ok) {
     // Log status + response body for diagnosis — never the request URL
     // (it carries `?key=...`) and never the key itself.
     const errorBody = await res.text().catch(() => "<unreadable response body>");
-    console.error("[ai-concierge] Gemini API error:", { status: res.status, model: GEMINI_MODEL, body: errorBody });
+    console.error("[ai-concierge] Gemini API error:", { status: res.status, model, body: errorBody });
     throw new Error(`Gemini request failed: ${res.status}`);
   }
   const data = await res.json();
