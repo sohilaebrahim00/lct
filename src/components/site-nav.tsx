@@ -258,6 +258,7 @@ export function SiteNav() {
           <div className="hidden items-center gap-4 lg:flex">
             <a
               href={CONTACT.phoneTel}
+              data-track-label="header_phone"
               className="flex items-center gap-2 text-sm text-foreground/75 transition-colors hover:text-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <Phone className="h-4 w-4" aria-hidden />
@@ -370,6 +371,7 @@ export function SiteNav() {
               <div className="mt-8 space-y-4">
                 <a
                   href={CONTACT.phoneTel}
+                  data-track-label="header_phone"
                   className="flex items-center gap-3 text-base text-foreground/85 transition hover:text-champagne focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <Phone className="h-4 w-4 text-champagne" aria-hidden />

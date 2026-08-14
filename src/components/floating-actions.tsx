@@ -34,6 +34,7 @@ export function FloatingActions() {
         target="_blank"
         rel="noreferrer"
         aria-label="Message us on WhatsApp"
+        data-track-label="floating_whatsapp_button"
         className="fab-btn"
       >
         <WhatsAppGlyph />
@@ -42,6 +43,7 @@ export function FloatingActions() {
       <a
         href={CONTACT.phoneTel}
         aria-label={`Call ${CONTACT.phoneDisplay}`}
+        data-track-label="floating_call_button"
         className="fab-btn fab-btn--gold"
       >
         <PhoneGlyph />

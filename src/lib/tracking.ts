@@ -15,7 +15,7 @@
  * skips it.
  */
 
-const GOOGLE_ADS_ID = "AW-17966850869";
+const GOOGLE_ADS_ID = "AW-18237817494";
 const STATCOUNTER_PROJECT = 13222021;
 const STATCOUNTER_SECURITY = "abf8a3d5";
 const GA4_MEASUREMENT_ID = import.meta.env.VITE_GA4_MEASUREMENT_ID as string | undefined;
@@ -76,23 +76,32 @@ export function trackPageview(path: string, title: string) {
  * Generic event helper. Every call site below fires only after a verified
  * user action — never speculatively, never on mere page load of a
  * conversion-adjacent page (e.g. reaching /book is tracked as
- * `reach_booking_page`, a neutral engagement signal, not a `purchase` or
- * `conversion` — this project has no MyLimoBiz confirmation webhook, so a
- * completed reservation can never be verified from the website's side; see
- * SEO_CHECKLIST.md / SECURITY_CHECKLIST.md for exactly what remains
- * unverifiable without MyLimoBiz-side confirmation).
+ * `reach_booking_page`, a neutral engagement signal).
  */
 export function trackEvent(name: string, params?: Record<string, unknown>) {
   window.gtag?.("event", name, params);
 }
 
+function pageLocation(): string {
+  return typeof window !== "undefined" ? window.location.href : "";
+}
+
+/** Clean engagement-event shape shared by phone/WhatsApp/CTA events, per spec. */
+function engagementParams(label: string, extra?: Record<string, unknown>) {
+  return { event_category: "engagement", event_label: label, page_location: pageLocation(), ...extra };
+}
+
 export const track = {
   bookingCtaClick: (source: string) => trackEvent("book_cta_click", { source }),
   reachBookingPage: () => trackEvent("reach_booking_page"),
-  leadSubmitSuccess: (formType: string) => trackEvent("generate_lead", { form_type: formType }),
-  phoneClick: (source: string) => trackEvent("phone_click", { source }),
+  /** Fires only after `submitFormClient` resolves `res.ok` in LeadForm — never on click alone. */
+  leadSubmitSuccess: (formType: string) =>
+    trackEvent("generate_lead", { form_name: formType, form_type: formType, page_location: pageLocation() }),
+  phoneClick: (label: string) => trackEvent("phone_call", engagementParams(label)),
   emailClick: (source: string) => trackEvent("email_click", { source }),
-  whatsappClick: (source: string) => trackEvent("whatsapp_click", { source }),
+  whatsappClick: (label: string) => trackEvent("whatsapp_click", engagementParams(label)),
+  /** Generic important-CTA tracker (Book Now, Reserve, Request a Quote, Get Started, ...). */
+  ctaClick: (buttonName: string) => trackEvent("cta_click", engagementParams(buttonName, { button_name: buttonName })),
   fleetVehicleBookClick: (vehicle: string) => trackEvent("fleet_vehicle_book_click", { vehicle }),
   fleetVehicleQuoteClick: (vehicle: string) => trackEvent("fleet_vehicle_quote_click", { vehicle }),
   fleetCallDispatchClick: () => trackEvent("fleet_call_dispatch_click"),
@@ -101,7 +110,28 @@ export const track = {
   aiConciergeOpen: (source: string) => trackEvent("ai_concierge_open", { source }),
   aiActionBookClicked: () => trackEvent("ai_action_book_clicked"),
   aiActionContactClicked: () => trackEvent("ai_action_contact_clicked"),
-  /** Ready for a real Ads conversion label the moment one is provided — not called anywhere yet. */
+  /**
+   * Booking conversion — fires only on a real signal from the MyLimoBiz
+   * booking iframe, not on a button click. MyLimoBiz's own `widget-loader.js`
+   * (fetched and read directly from book.mylimobiz.com to confirm this, not
+   * assumed) does `window.location = event.data` whenever it receives a
+   * `postMessage` whose data contains "widget-booking-data" — the mechanism
+   * it uses to leave the widget after a completed reservation. `Analytics`
+   * listens for that same signal (origin-checked, fires once) and calls this
+   * before that navigation happens. `transport_type: 'beacon'` maximizes the
+   * chance the hit is actually sent given a page navigation follows almost
+   * immediately. This could not be exercised against a real completed
+   * booking in this environment — verify it in Google Ads' conversion
+   * diagnostics after a real test reservation.
+   */
+  bookingComplete: () =>
+    trackEvent("conversion", {
+      event_category: "conversion",
+      event_label: "booking_complete",
+      page_location: pageLocation(),
+      transport_type: "beacon",
+    }),
+  /** Ready for a real per-action Ads conversion label the moment one is provided — not called anywhere yet. */
   adsConversion: (conversionLabel: string, value?: number) =>
     trackEvent("conversion", { send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`, value }),
 };
