@@ -45,7 +45,34 @@
     # it since only inline *code*, not cross-origin script tags, needs
     # 'unsafe-inline'). No other inline scripts exist in this app — Vite
     # emits only external, hashed <script src> bundles.
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests"
+    #
+    # connect-src/img-src/frame-src additions below (2026-08-14) fix real
+    # CSP warnings Google Tag Assistant surfaced for the Ads remarketing
+    # tag's own network calls. Verified by actually enforcing this exact
+    # policy at the browser level (Playwright route interception applying
+    # it only to this site's own origin, not to cross-origin iframe
+    # content) and watching real CSP-violation console messages, not
+    # guessed: googletagmanager.com, googleads.g.doubleclick.net, and
+    # googleadservices.com all make connect-src (fetch/XHR/beacon) calls
+    # beyond the initial script-src load; the beacon requests themselves
+    # (gtag.config / page_view / remarketing) go to www.google.com itself
+    # (host is literally google.com — googleadservices.com only appears as
+    # a query parameter on those requests, easy to miss without checking
+    # the real traffic) — added to connect-src, beyond what was originally
+    # asked, because verification showed it's actually required.
+    # doubleclick.net and google.com also serve 1x1 tracking-pixel <img>
+    # fallbacks; googletagmanager.com uses a hidden frame-src iframe for
+    # cross-domain conversion linking. ad.doubleclick.net (a *different*
+    # subdomain from googleads.g.doubleclick.net — CSP doesn't imply
+    # sibling-subdomain coverage) makes its own separate connect-src call,
+    # also only found by watching real traffic. One residual, accepted gap: Google's
+    # "1p-user-list" remarketing pixel can load from a visitor's regional
+    # Google TLD (observed: google.com.eg) rather than always google.com —
+    # CSP source expressions can't wildcard a TLD suffix, only a subdomain
+    # prefix, so this can't be fully closed without an unreasonably long
+    # per-country allowlist; low-severity since it's a redundant pixel, not
+    # the primary tracking beacon (which succeeds via connect-src above).
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com; media-src 'self'; upgrade-insecure-requests"
 
 # Hashed build assets (js/css/images/video/fonts all land in dist/assets/) are
 # immutable — safe to cache for a year.

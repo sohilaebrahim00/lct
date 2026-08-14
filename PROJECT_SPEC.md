@@ -1379,6 +1379,30 @@ Files changed: `index.html`, `src/lib/tracking.ts`, `src/components/analytics.ts
 
 ---
 
+## 1c-47. CSP allowlist fixes for Google Ads/Tag Assistant warnings (2026-08-14)
+
+Follow-up to §1c-46: with the base tag now confirmed working (AW-18237817494 detected, page_view/remarketing events firing per the client's own report), Tag Assistant was still surfacing CSP warnings for the tag's *own* network calls beyond the initial script load. Tracking implementation itself was not touched — this was CSP-allowlist work only, across all three header-config files (`netlify.toml`, `public/_headers`, `public/.htaccess`).
+
+**A pre-existing sync gap found during the audit.** `public/_headers` — a real, active Netlify config file (Netlify honors `_headers`/`_redirects` inside the published folder on every deploy method, not just CLI/Git deploys) — was still missing the `'unsafe-inline'` `script-src` addition from §1c-46; only `netlify.toml` and `public/.htaccess` were updated then. This hadn't caused a live problem only because Netlify's documented precedence rule is that `netlify.toml` header values win over `_headers` on conflict for CLI/Git deploys (the deploy method this project actually uses) — but the file was stale relative to its own documented "kept in sync manually" purpose. Fixed as part of this pass.
+
+**Verified by actually enforcing the policy, not just editing text.** `vite preview` (the local test server) never applies Netlify's header config at all, so testing this required a real enforcement mechanism: a Playwright `context.route()` handler that attaches the exact CSP string parsed live out of `netlify.toml` to every response from this site's own origin (deliberately scoped to same-origin only — an earlier draft applied it to *every* request including the cross-origin MyLimoBiz iframe's own document, which produced false-positive `frame-ancestors` violations against MyLimoBiz's own page, not a real issue), then watched for genuine browser-emitted CSP-violation console messages across a real page load plus opening the Client Login popover.
+
+That real-traffic verification found the client's requested domain list was a correct starting point but incomplete — three additions beyond what was explicitly listed, each confirmed necessary by an actual observed violation, not guessed:
+- **`connect-src`: `https://www.google.com`** — the gtag remarketing/pageview beacon requests (`gtag.config`, `page_view`) are hosted directly on `www.google.com` (`/ccm/collect`, `/rmkt/collect`); `googleadservices.com` only appears as a query parameter (`hn=www.googleadservices.com`) on those requests, not the actual host, so allowlisting only `googleadservices.com` (as originally requested) left the real beacon host blocked.
+- **`connect-src`: `https://ad.doubleclick.net`** — a separate subdomain from `googleads.g.doubleclick.net` (already allowlisted); CSP does not imply sibling-subdomain coverage, and this specific `ccm/s/collect` beacon uses the bare `ad.` subdomain.
+- **`img-src`/`connect-src`** additions exactly as requested (`googleads.g.doubleclick.net`, `www.google.com` for img-src; `analytics.google.com`, `googletagmanager.com`, `googleadservices.com` for connect-src) — all confirmed no longer triggering violations after being added.
+- **`frame-src`: `https://www.googletagmanager.com`** — added exactly as requested; not directly exercised by this verification pass (no violation observed either with or without it), kept per the explicit instruction since it's a documented pattern for Google's cross-domain conversion-linking iframe and is harmless to include.
+
+**Two remaining items, deliberately not fixed — flagged instead of silently expanded or silently ignored.**
+1. **StatCounter's own `connect-src` gap** (`c.statcounter.com/t.php?...&get_config=true` — a fetch/XHR call StatCounter makes beyond the `img-src` pixel already allowlisted) surfaced during the same verification. This is a genuine, pre-existing, real CSP violation — but StatCounter is not a Google Ads/Tag resource, and the task's explicit scope was "Google Ads / Google Tag resources" only. Left untouched pending an explicit decision to include it.
+2. **Google's regional-TLD remarketing pixel** (`img-src`) — the "1p-user-list" pixel loaded from `www.google.com.eg` in testing rather than always `www.google.com`; Google Ads' remarketing pixel can resolve to a visitor's regional Google TLD. CSP source expressions can only wildcard a *subdomain* prefix (`*.google.com`), not a TLD *suffix*, so this can't be closed without an impractically long per-country domain list. Low severity: it's a redundant supplementary pixel, not the primary tracking beacon, which succeeds via the `connect-src` fix above.
+
+**QA.** `npx tsc --noEmit` and `npm run build` clean. All three CSP strings confirmed byte-identical across `netlify.toml`/`public/_headers`/`public/.htaccess` (diffed directly, not eyeballed). Tracking re-confirmed unchanged: one `gtag/js` script tag, one `config` call, `phone_call`/`whatsapp_click`/`book_cta_click`/`cta_click` all firing with unchanged params. Clienity forms and the MyLimoBiz booking/login widgets re-verified with no regressions.
+
+Files changed: `netlify.toml`, `public/_headers`, `public/.htaccess`.
+
+---
+
 ## 1c-20. Trust badge premium placement + transparent logo derivatives (2026-08-08)
 
 Follow-up to §1c-19: the client supplied the real BBB/GNET/NLA files (as `logo1.png`/`logo2.png`/`logo3.png` — found in `dist/assets/`, the build-output folder, which gets wiped on every `npm run build`; copied to a safe location immediately before doing anything else). Mapped by direct visual inspection, not filename: logo1 → GNET, logo2 → NLA, logo3 → BBB.
@@ -2146,6 +2170,8 @@ Internal pages; forms + booking embed decision; SEO/schema; a11y; performance; b
 - [x] Final production verification pass — clean across the board (2026-08-14, see §1c-45)
 - [ ] AI Concierge: live endpoint confirmed deployed and reachable but returns the fallback, not real Gemini replies — code re-verified correct; check `GEMINI_API_KEY` and function logs in the Netlify dashboard (see §1c-45)
 - [x] Google Tag moved to static HTML, fixing Tag Assistant "could not connect" (2026-08-14, see §1c-46)
+- [x] CSP allowlist fixes for Google Ads/Tag Assistant warnings, verified by real browser-level enforcement (2026-08-14, see §1c-47)
+- [ ] StatCounter's own `connect-src` CSP gap found during §1c-47's audit (`c.statcounter.com/t.php`) — real but out of that task's Google-only scope, left untouched pending a decision to include it
 - [ ] Corporate Transportation Clienity form still not finished on Clienity's side — `/corporate` correctly stays on the Supabase `LeadForm` until a real embed URL exists (see §1c-34/§1c-41)  
 - [ ] Further services storytelling refinements beyond homepage  
 - [ ] Dedicated Sprinter photography (Coach resolved 2026-07-31 — see §1c-1)  

@@ -49,7 +49,22 @@
   # bootstrap snippet in index.html <head> is Google's own canonical
   # inline format and needs this to run at all. No other inline scripts
   # exist anywhere in this codebase.
-  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com; media-src 'self'; upgrade-insecure-requests"
+  #
+  # connect-src/img-src/frame-src additions (2026-08-14) fix real CSP
+  # warnings Google Tag Assistant surfaced for the Ads remarketing tag's
+  # own network calls — verified by actually enforcing this policy at the
+  # browser level and watching real CSP-violation console messages, not
+  # guessed. The beacon requests (gtag.config / page_view / remarketing)
+  # go to www.google.com itself, and ad.doubleclick.net makes its own call
+  # separate from googleads.g.doubleclick.net (different subdomain, CSP
+  # doesn't imply sibling coverage) — both added beyond what was first
+  # asked, because verification showed they're actually required
+  # (googleadservices.com only appears as a query parameter on the
+  # google.com requests, not the host). One accepted residual gap: Google's
+  # "1p-user-list" remarketing pixel can load from a visitor's regional
+  # Google TLD (e.g. google.com.eg) — CSP can't wildcard a TLD suffix, and
+  # this is a redundant pixel, not the primary tracking beacon.
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com; media-src 'self'; upgrade-insecure-requests"
 </IfModule>
 
 # ---------------------------------------------------------------------------
