@@ -1345,6 +1345,20 @@ Files added: `src/components/legal/legal-article.tsx`, `src/lib/mylimobiz-auth-s
 
 ---
 
+## 1c-45. Final production verification pass — clean, one external finding (2026-08-14)
+
+Full re-verification of everything built across §1c-38 through §1c-44 (mobile UX, MyLimoBiz login, AI Concierge, Google Ads tracking, legal pages) — a review-and-confirm pass, not new feature work, per explicit "do not make unnecessary changes, only fix critical issues" instruction. No source files were changed; every check below is either a rerun of a previously-built verification script or a fresh live-endpoint check.
+
+**Clean:** `npx tsc --noEmit` and `npm run build` (0 errors either). Full sweep — 8 breakpoints (360×800 through 1440×900, including tablet) × 19 routes (every route this task listed plus every other real route) = 152 checks, 0 horizontal overflow, 0 console errors. Clienity forms (Driver/Company Partner/Referral Partner) — exactly one iframe each, no duplicates, correct URLs. Corporate still correctly uses the Supabase `LeadForm` (Clienity's Corporate form remains unfinished on their side — unchanged, not a regression). MyLimoBiz booking widget re-confirmed with real content sizing (782px wide, real height once `iframeResizer` settles) under both cold-landing and navigate-from-home. Client Login popover confirmed on desktop (header + footer, open/closed, 0 overflow) and mobile at 360/390/430 (dialog opens, iframe visible, 0 overflow, exactly 3 popover instances sitewide). Google tag: exactly one `gtag/js` script tag, correct `AW-18237817494` config, `phone_call`/`whatsapp_click`/`book_cta_click`/`cta_click` all confirmed firing with correct params on real dispatched clicks. Zero Supabase references remain anywhere under `src/lib/concierge/` or the Netlify function.
+
+**One real finding — not a code bug.** Hit the live production AI Concierge endpoint directly (`https://lctuniversal.com/.netlify/functions/ai-concierge`, real POST requests, not a local mock): the function **is** deployed and reachable (Netlify's own headers confirm a fresh, non-cached function invocation — `Cache-Status: fwd=miss`/`fwd=bypass` on both edge layers), and returns a well-formed 200 JSON response — but that response is the graceful-fallback message ("Concierge is temporarily unavailable...") rather than a real Gemini-generated reply, across two different test messages. Since §1c-42/§1c-43's prior live-endpoint tests already proved the request construction itself is correct (a deliberately invalid key produced Google's own `API_KEY_INVALID` response, not a malformed-request error), this points to either `GEMINI_API_KEY` not being set (or having been unset/changed) in Netlify's environment, or Gemini itself erroring for another reason the function's own `console.error` logging (status + response body, added in §1c-42) would show in Netlify's function logs — which aren't visible from this environment. No code change was made in response to this, since the code was already re-verified correct; it's flagged here as an action item for whoever has Netlify dashboard access to check the function's logs and confirm the key is actually set.
+
+**Production readiness:** every part of the site under this project's own control (code, build, routes, forms, tracking, legal pages, login widget) is clean and verified. The one open item is external — the Gemini key/logs check above — and doesn't block deployment of anything else.
+
+Files changed: none.
+
+---
+
 ## 1c-20. Trust badge premium placement + transparent logo derivatives (2026-08-08)
 
 Follow-up to §1c-19: the client supplied the real BBB/GNET/NLA files (as `logo1.png`/`logo2.png`/`logo3.png` — found in `dist/assets/`, the build-output folder, which gets wiped on every `npm run build`; copied to a safe location immediately before doing anything else). Mapped by direct visual inspection, not filename: logo1 → GNET, logo2 → NLA, logo3 → BBB.
@@ -2108,7 +2122,9 @@ Internal pages; forms + booking embed decision; SEO/schema; a11y; performance; b
 - [x] AI Concierge migrated off Supabase onto a Netlify Function (Gemini), deployed with a real production API key as of 2026-08-14 (model-availability fixed twice based on real live-key errors reported back) — see §1c-42
 - [x] Google Ads tracking (AW-18237817494) + conversion/engagement events (2026-08-14, see §1c-43)
 - [x] Legal pages premium redesign + MyLimoBiz Client Login widget fixes (mobile scroll-into-view, sitewide "My Account" state) (2026-08-14, see §1c-44)
-- [ ] Privacy Policy still needs real SMS/TCPA consent language from the client — none exists on `/privacy` today, and no "updated privacy policy content" was actually supplied to use verbatim (see §1c-44); nothing fabricated in its place
+- [x] Privacy Policy updated with client-approved SMS/TCPA consent content verbatim (2026-08-14)
+- [x] Final production verification pass — clean across the board (2026-08-14, see §1c-45)
+- [ ] AI Concierge: live endpoint confirmed deployed and reachable but returns the fallback, not real Gemini replies — code re-verified correct; check `GEMINI_API_KEY` and function logs in the Netlify dashboard (see §1c-45)
 - [ ] Corporate Transportation Clienity form still not finished on Clienity's side — `/corporate` correctly stays on the Supabase `LeadForm` until a real embed URL exists (see §1c-34/§1c-41)  
 - [ ] Further services storytelling refinements beyond homepage  
 - [ ] Dedicated Sprinter photography (Coach resolved 2026-07-31 — see §1c-1)  
