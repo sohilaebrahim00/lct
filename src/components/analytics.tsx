@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { initTracking, trackPageview, track } from "@/lib/tracking";
+import { setMyLimoBizAuthenticated } from "@/lib/mylimobiz-auth-state";
 
 // Supplementary to `data-cursor="book"` (already applied sitewide to every
 // booking CTA) — catches lead-gen CTAs that route to /contact or similar
@@ -79,18 +80,29 @@ export function Analytics() {
     return () => document.removeEventListener("click", onClick, { capture: true });
   }, []);
 
-  // Real booking-completion signal — see `track.bookingComplete` for the
-  // full story on why this specific message shape is what MyLimoBiz's own
-  // script uses to leave the widget after a completed reservation. Fires
-  // once per page load; ignores anything not actually from MyLimoBiz.
+  // Real signals from MyLimoBiz's widget-loader.js (fetched and read
+  // directly from book.mylimobiz.com, not guessed) — it does
+  // `window.location = event.data` on a `postMessage` whose data contains
+  // either "widget-booking-data" (completed reservation) or
+  // "la-login-widget-dashboard" (successful login), the mechanism it uses
+  // to leave the widget for its own hosted dashboard/confirmation page.
+  // Both fire once per page load; both ignore anything not actually from
+  // MyLimoBiz. See `track.bookingComplete` and
+  // `src/lib/mylimobiz-auth-state.ts` for what each does with the signal.
   useEffect(() => {
-    let fired = false;
+    let bookingFired = false;
+    let loginFired = false;
     const onMessage = (event: MessageEvent) => {
-      if (fired) return;
       if (!event.origin.includes("mylimobiz.com")) return;
-      if (typeof event.data !== "string" || !event.data.includes("widget-booking-data")) return;
-      fired = true;
-      track.bookingComplete();
+      if (typeof event.data !== "string") return;
+      if (!bookingFired && event.data.includes("widget-booking-data")) {
+        bookingFired = true;
+        track.bookingComplete();
+      }
+      if (!loginFired && event.data.includes("la-login-widget-dashboard")) {
+        loginFired = true;
+        setMyLimoBizAuthenticated(true);
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);

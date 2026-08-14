@@ -1,6 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { LogIn, X } from "lucide-react";
 import { MyLimoBizLoginButton } from "./mylimobiz-login-button";
+import {
+  getMyLimoBizAuthenticatedServerSnapshot,
+  getMyLimoBizAuthenticatedSnapshot,
+  subscribeMyLimoBizAuthenticated,
+} from "@/lib/mylimobiz-auth-state";
 
 /**
  * Wraps `MyLimoBizLoginButton` in a small trigger + floating panel instead
@@ -26,6 +31,12 @@ export function MyLimoBizLoginPopover({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const authenticated = useSyncExternalStore(
+    subscribeMyLimoBizAuthenticated,
+    getMyLimoBizAuthenticatedSnapshot,
+    getMyLimoBizAuthenticatedServerSnapshot,
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +57,20 @@ export function MyLimoBizLoginPopover({
     };
   }, [open]);
 
+  // Confirmed via testing: on mobile, this popover's trigger sits near the
+  // bottom of the (already tall, independently-scrollable) mobile nav
+  // panel, so the panel opened mostly below the visible viewport — fully
+  // reachable by scrolling, but with nothing on screen hinting that, which
+  // read as "the widget doesn't appear". Scroll it into view automatically
+  // instead of leaving that to chance.
+  useEffect(() => {
+    if (!open) return;
+    const raf = requestAnimationFrame(() => {
+      panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [open]);
+
   return (
     <div ref={rootRef} className="relative">
       <button
@@ -57,7 +82,7 @@ export function MyLimoBizLoginPopover({
         className={triggerClassName}
       >
         <LogIn className="h-3.5 w-3.5" aria-hidden />
-        Client Login
+        {authenticated ? "My Account" : "Client Login"}
       </button>
 
       {/*
@@ -73,6 +98,7 @@ export function MyLimoBizLoginPopover({
         never get converted into a working iframe.
       */}
       <div
+        ref={panelRef}
         role="dialog"
         aria-label="Client Login"
         hidden={!open}
@@ -81,7 +107,7 @@ export function MyLimoBizLoginPopover({
         }`}
       >
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-          <span className="eyebrow text-gold">Client Login</span>
+          <span className="eyebrow text-gold">{authenticated ? "My Account" : "Client Login"}</span>
           <button
             type="button"
             onClick={() => setOpen(false)}

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout, PageHero } from "@/components/site-layout";
+import { LegalArticle, type LegalSectionSpec } from "@/components/legal/legal-article";
 import { CANCELLATION_SUMMARY, CONTACT } from "@/lib/site-data";
 import { pageMeta } from "@/lib/seo";
 
@@ -26,6 +27,39 @@ function PolicyList({ items }: { items: readonly string[] }) {
   );
 }
 
+const SECTIONS: LegalSectionSpec[] = [
+  {
+    id: "sedans-suvs",
+    title: "Sedans & SUVs",
+    content: <PolicyList items={CANCELLATION_SUMMARY.sedanSuv} />,
+  },
+  {
+    id: "airport-transfers",
+    title: "Airport Transfers",
+    content: <PolicyList items={CANCELLATION_SUMMARY.airport} />,
+  },
+  {
+    id: "hourly-special-event",
+    title: "Hourly & Special Event Services",
+    content: (
+      <>
+        <p className="!mt-0 text-sm">Weddings, proms, and other special events.</p>
+        <PolicyList items={CANCELLATION_SUMMARY.hourlyEvents} />
+      </>
+    ),
+  },
+  {
+    id: "modifications",
+    title: "Modifications",
+    content: <p>{CANCELLATION_SUMMARY.modifications}</p>,
+  },
+  {
+    id: "weather-emergency-exceptions",
+    title: "Weather & Emergency Exceptions",
+    content: <p>{CANCELLATION_SUMMARY.exceptions}</p>,
+  },
+];
+
 function CancellationPolicy() {
   return (
     <SiteLayout>
@@ -34,36 +68,16 @@ function CancellationPolicy() {
         title="Cancellation Policy"
         description="At LCT Universal Executive Transports, we understand that plans can change. To provide the highest level of service to all our clients, we have established the following cancellation policy."
       />
-      <article className="mx-auto max-w-3xl px-6 pb-24 lg:px-10 prose prose-invert prose-headings:font-display prose-p:text-muted-foreground prose-p:leading-relaxed prose-li:text-muted-foreground">
-        <h2>Sedans &amp; SUVs</h2>
-        <PolicyList items={CANCELLATION_SUMMARY.sedanSuv} />
-
-        <h2>Airport Transfers</h2>
-        <PolicyList items={CANCELLATION_SUMMARY.airport} />
-
-        <h2>Hourly &amp; Special Event Services</h2>
-        <p className="!mb-2 !mt-0 text-sm">Weddings, proms, and other special events.</p>
-        <PolicyList items={CANCELLATION_SUMMARY.hourlyEvents} />
-
-        <h2>Modifications</h2>
-        <p>{CANCELLATION_SUMMARY.modifications}</p>
-
-        <h2>Weather &amp; Emergency Exceptions</h2>
-        <p>{CANCELLATION_SUMMARY.exceptions}</p>
-
-        <h2>Contact</h2>
-        <p>
-          Questions about a specific reservation? Call{" "}
-          <a href={CONTACT.phoneTel} className="text-gold">
-            {CONTACT.phoneDisplay}
-          </a>{" "}
-          or email{" "}
-          <a href={CONTACT.emailMailto} className="text-gold">
-            {CONTACT.email}
-          </a>
-          .
-        </p>
-      </article>
+      <LegalArticle
+        sections={SECTIONS}
+        contact={
+          <p>
+            Questions about a specific reservation? Call{" "}
+            <a href={CONTACT.phoneTel}>{CONTACT.phoneDisplay}</a> or email{" "}
+            <a href={CONTACT.emailMailto}>{CONTACT.email}</a>.
+          </p>
+        }
+      />
     </SiteLayout>
   );
 }
