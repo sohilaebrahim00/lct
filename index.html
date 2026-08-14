@@ -3,6 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Google tag (gtag.js) — must be static HTML, not injected by React.
+         Google Tag Assistant's live-connection check expects to find this
+         tag already present before any JS bundle runs; the previous
+         React-injected version (a useEffect inside `Analytics`, mounted
+         deep in the component tree) only fired after hydration, which is
+         late enough that Tag Assistant reported "could not connect" even
+         though the tag eventually loaded fine for real GA4/Ads reporting.
+         `src/lib/tracking.ts` no longer defines `window.gtag` or loads this
+         script — it only calls the `window.gtag(...)` this sets up. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18237817494"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'AW-18237817494');
+    </script>
     <!--
       No static <title>/<meta name="description">/<meta name="theme-color">
       here on purpose: `__root.tsx`'s `head()` (via TanStack Router's

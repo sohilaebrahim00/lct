@@ -46,9 +46,9 @@ export function Analytics() {
   }, []);
 
   useEffect(() => {
-    // Skip the very first fire — initTracking's own `gtag config` call
-    // already accounts for the initial pageview once GA4 is configured;
-    // this avoids a double-count on first load.
+    // Skip the very first fire — the static `gtag('config', 'AW-...')`
+    // call in index.html <head> already accounts for the initial
+    // pageview; this avoids a double-count on first load.
     if (firstRun.current) {
       firstRun.current = false;
       if (pathname === "/book") track.reachBookingPage();

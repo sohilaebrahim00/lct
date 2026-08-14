@@ -1359,6 +1359,26 @@ Files changed: none.
 
 ---
 
+## 1c-46. Google Tag moved to static HTML — fixes Tag Assistant "could not connect" (2026-08-14)
+
+Google Tag Assistant reported "Could not connect to lctuniversal.com" / connection timeout, despite `typeof gtag === "function"`, `window.dataLayer` existing, and Google Ads itself showing "Installed on site" — all true simultaneously because the base tag was working *eventually*, just not *early enough*. Root cause: `gtag.js` + the initial `gtag('config', 'AW-18237817494')` call were injected by a `useEffect` inside `Analytics` (mounted deep in `__root.tsx`'s component tree), which only runs after React hydrates. Tag Assistant's live-connection check inspects the page before that point and reported no tag found — a timing gap invisible to slower checks (Google Ads' own crawl, manual console checks after the page settled) but real to a live/real-time check.
+
+**Fix.** Moved the exact canonical Google-supplied snippet into `index.html` `<head>`, as the very first content (ahead of even the font preconnects), so it's present in the static HTML before any JS bundle parses — confirmed in the built `dist/index.html` that Vite preserves it byte-for-byte and positions it before the bundled `<script type="module">` tag. `src/lib/tracking.ts`'s `initTracking()` no longer defines `window.gtag`, no longer loads `gtag/js`, and no longer fires the initial `config` call — it only calls the `window.gtag(...)` the static snippet already set up (for GA4's optional config call, if `VITE_GA4_MEASUREMENT_ID` is ever set) and still handles StatCounter (unrelated to Google's tag, left untouched). `Analytics`'s existing "skip the first pageview fire" logic — needed to avoid double-counting the implicit pageview the base `config` call produces — still applies unchanged, just with an updated comment pointing at the new static location.
+
+**A necessary side effect, not scope creep: CSP.** This site's `Content-Security-Policy` (`netlify.toml`, mirrored in `public/.htaccess`) previously had no `'unsafe-inline'` in `script-src` — by design, since every script was either same-origin or an external `<script src>` from an allowlisted domain, no inline code anywhere. Google's canonical snippet is inline `<script>` code, which that CSP would have silently blocked in production (a strictly worse outcome than the original bug — the tag would never load at all, not just load late). Added `'unsafe-inline'` to `script-src` in both files, with a comment explaining exactly why and confirming no other inline scripts exist anywhere in the codebase (Vite emits only external hashed bundles). This is a direct, required consequence of the literal change requested, not an unrelated change.
+
+**Verified, not assumed.**
+- Exactly one `googletagmanager.com/gtag/js?id=AW-18237817494` script tag in the DOM; exactly one `gtag('config', 'AW-18237817494')` call reaches `dataLayer` (confirmed by intercepting `dataLayer.push` directly — a `window.gtag` reassignment-interception approach was tried first and gave false-empty results, because `function gtag(){}` as a global function *declaration* uses `DefineOwnProperty` semantics that bypass property setters entirely; not a real site issue, just a test-instrumentation lesson).
+- `typeof window.gtag === "function"` and `Array.isArray(window.dataLayer)` both true.
+- `phone_call`, `whatsapp_click`, `book_cta_click`, `cta_click` all fire correctly on real dispatched clicks with unchanged params (§1c-43's event architecture untouched).
+- `npx tsc --noEmit` and `npm run build`: clean.
+- Full sweep re-run three times: 0 horizontal overflow on every single run. Two of the three runs also logged a handful of console "404" messages, always on Google's own `google.com/ccm/collect` / `rmkt/collect` / `doubleclick.net` remarketing-beacon URLs (confirmed by isolating the exact failing page/breakpoint with request-level logging across 3 clean repeats, which showed only the expected `net::ERR_ABORTED` — Chromium aborting an in-flight beacon when the page navigates away, completely normal for any site with Google's remarketing tag). This is a known characteristic of Google's own beacon behavior colliding with an automated sweep's fast page-to-page cadence (~1.5s/page — no real visitor navigates that fast), not a defect introduced by this change; documented rather than chased into a non-existent code fix.
+- Clienity forms, the MyLimoBiz booking widget, and the Client Login popover (desktop + mobile) all re-verified with no regressions. The AI Concierge Netlify function shares no code with the tracking path at all — unaffected by definition.
+
+Files changed: `index.html`, `src/lib/tracking.ts`, `src/components/analytics.tsx` (comment only), `netlify.toml`, `public/.htaccess`.
+
+---
+
 ## 1c-20. Trust badge premium placement + transparent logo derivatives (2026-08-08)
 
 Follow-up to §1c-19: the client supplied the real BBB/GNET/NLA files (as `logo1.png`/`logo2.png`/`logo3.png` — found in `dist/assets/`, the build-output folder, which gets wiped on every `npm run build`; copied to a safe location immediately before doing anything else). Mapped by direct visual inspection, not filename: logo1 → GNET, logo2 → NLA, logo3 → BBB.
@@ -2125,6 +2145,7 @@ Internal pages; forms + booking embed decision; SEO/schema; a11y; performance; b
 - [x] Privacy Policy updated with client-approved SMS/TCPA consent content verbatim (2026-08-14)
 - [x] Final production verification pass — clean across the board (2026-08-14, see §1c-45)
 - [ ] AI Concierge: live endpoint confirmed deployed and reachable but returns the fallback, not real Gemini replies — code re-verified correct; check `GEMINI_API_KEY` and function logs in the Netlify dashboard (see §1c-45)
+- [x] Google Tag moved to static HTML, fixing Tag Assistant "could not connect" (2026-08-14, see §1c-46)
 - [ ] Corporate Transportation Clienity form still not finished on Clienity's side — `/corporate` correctly stays on the Supabase `LeadForm` until a real embed URL exists (see §1c-34/§1c-41)  
 - [ ] Further services storytelling refinements beyond homepage  
 - [ ] Dedicated Sprinter photography (Coach resolved 2026-07-31 — see §1c-1)  

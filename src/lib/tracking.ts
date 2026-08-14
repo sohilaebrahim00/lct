@@ -1,18 +1,28 @@
 /**
- * Single controlled tracking architecture — one gtag.js load serves both
- * Google Ads and GA4 (Google's own recommended pattern: one script tag,
- * multiple `gtag('config', ...)` calls), StatCounter loads once alongside
- * it. Nothing here fires more than once per page load; nothing duplicates
- * what index.html would otherwise load, because index.html loads nothing —
- * this module is the only place any tracking script is injected.
+ * Single controlled tracking architecture.
  *
- * GOOGLE_ADS_ID and STATCOUNTER are the verified production identifiers
- * supplied for this project. GA4_MEASUREMENT_ID is intentionally sourced
- * from an env var that is not currently set — no real GA4 property ID has
- * been provided, and fabricating one would silently misreport analytics
- * data forever. GA4 activates automatically the moment
- * `VITE_GA4_MEASUREMENT_ID` is set; until then `initTracking()` simply
- * skips it.
+ * The base Google tag (gtag.js script + `dataLayer` + `window.gtag` +
+ * the initial `gtag('config', 'AW-18237817494')` call) is now loaded
+ * statically in `index.html` <head> — Google's own canonical inline
+ * format, present before any JS bundle runs. This was moved out of React
+ * (2026-08-14): Google Tag Assistant's live-connection check expects the
+ * tag already installed by the time it inspects the page, and a
+ * React-injected `useEffect` (however early) only fires after hydration,
+ * which was late enough to report "could not connect" even though the
+ * tag loaded fine for actual GA4/Ads reporting. This module now only
+ * ever *calls* `window.gtag(...)` — it never defines it and never loads
+ * the gtag.js script itself, so there is exactly one Google Tag
+ * initialization, done once, in the static HTML.
+ *
+ * GOOGLE_ADS_ID is still needed here for `adsConversion`'s `send_to`
+ * construction. GA4_MEASUREMENT_ID is intentionally sourced from an env
+ * var that is not currently set — no real GA4 property ID has been
+ * provided, and fabricating one would silently misreport analytics data
+ * forever. GA4 activates automatically (via an additional `gtag('config',
+ * ...)` call — the same script already loaded, per Google's documented
+ * multi-config pattern) the moment `VITE_GA4_MEASUREMENT_ID` is set;
+ * until then `initTracking()` simply skips it. StatCounter is unrelated
+ * to Google's tag and still loads dynamically here, unchanged.
  */
 
 const GOOGLE_ADS_ID = "AW-18237817494";
@@ -23,6 +33,7 @@ const GA4_MEASUREMENT_ID = import.meta.env.VITE_GA4_MEASUREMENT_ID as string | u
 declare global {
   interface Window {
     dataLayer?: unknown[];
+    /** Defined by the static snippet in index.html, not by this module. */
     gtag?: (...args: unknown[]) => void;
     sc_project?: number;
     sc_security?: string;
@@ -44,20 +55,14 @@ export function initTracking() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
 
-  // --- Google gtag.js (Ads +, once available, GA4) ---
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag() {
-    // eslint-disable-next-line prefer-rest-params
-    window.dataLayer!.push(arguments);
-  };
-  window.gtag("js", new Date());
-  window.gtag("config", GOOGLE_ADS_ID);
+  // Base gtag.js + the AW-18237817494 config already happened statically
+  // in index.html by the time any of this runs. Only an *additional* GA4
+  // config call belongs here, if/when a real property ID is supplied.
   if (GA4_MEASUREMENT_ID) {
-    window.gtag("config", GA4_MEASUREMENT_ID, { send_page_view: false }); // SPA: we send page_view ourselves on route change
+    window.gtag?.("config", GA4_MEASUREMENT_ID, { send_page_view: false }); // SPA: we send page_view ourselves on route change
   }
-  loadScriptOnce(`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`);
 
-  // --- StatCounter ---
+  // --- StatCounter (unrelated to Google's tag; unchanged) ---
   window.sc_project = STATCOUNTER_PROJECT;
   window.sc_security = STATCOUNTER_SECURITY;
   loadScriptOnce("https://www.statcounter.com/counter/counter.js");
