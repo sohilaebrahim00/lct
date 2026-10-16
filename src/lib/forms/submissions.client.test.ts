@@ -33,6 +33,10 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
+// Captures the fire-and-forget notification request (never a real network call).
+const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+vi.stubGlobal("fetch", fetchMock);
+
 const { submitFormClient } = await import("./submissions.client");
 
 const valid = {
@@ -50,6 +54,22 @@ describe("submitFormClient", () => {
     calls.selected = false;
     insertError = null;
     localStorage.clear();
+    fetchMock.mockClear();
+  });
+
+  it("asks the server to email the company inbox after the lead is saved (id only)", async () => {
+    const res = await submitFormClient(valid);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe("/.netlify/functions/lead-notify");
+    expect(init).toMatchObject({ method: "POST", keepalive: true });
+    expect(JSON.parse(String(init.body))).toEqual({ id: res.id });
+  });
+
+  it("does not request a notification when the lead was not saved", async () => {
+    insertError = { code: "42501", message: "denied" };
+    await submitFormClient(valid);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("inserts without reading the row back (anon has no SELECT policy, so RETURNING fails RLS)", async () => {

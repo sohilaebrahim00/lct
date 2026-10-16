@@ -118,7 +118,29 @@ export async function submitFormClient(data: SubmissionInput): Promise<Submissio
   }
 
   markClientRateLimit();
+  if (id) requestLeadNotification(id);
   return { ok: true, id: id ?? undefined, status: "received" };
+}
+
+/**
+ * Asks the `lead-notify` Netlify Function to email the company inbox about
+ * the lead just stored. Fire-and-forget: the lead is already safely saved, the
+ * visitor's success message never waits on email, and if this request is lost
+ * (tab closed, offline, function cold/erroring) the scheduled
+ * `lead-notify-sweep` sends the notification within ~5 minutes. Only the id
+ * is sent — the function reads the stored row from Supabase server-side.
+ */
+function requestLeadNotification(id: string) {
+  try {
+    void fetch("/.netlify/functions/lead-notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    /* the scheduled sweep covers it */
+  }
 }
 
 function newSubmissionId(): string | null {

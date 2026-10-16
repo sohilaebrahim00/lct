@@ -16,21 +16,17 @@
  * `/.netlify/functions/ai-concierge` — no extra routing config needed.
  */
 import { buildKnowledgeSummary } from "./ai-concierge-knowledge.js";
+import { ConciergeError, DEFAULT_FALLBACK_MODEL, DEFAULT_MODEL, generate } from "../lib/gemini.js";
 
-// Gemini model — change here if Google deprecates/renames it again (this is
-// the second time: gemini-1.5-flash was retired, then gemini-2.5-flash
-// returned "no longer available to new users"). GEMINI_MODEL_FALLBACK is
-// tried automatically, once, only if the primary model itself 404s as
-// unavailable — not for other errors (an invalid key or rate limit
-// wouldn't be fixed by switching models).
-//
-// 2026-10-16: the live function was returning its "temporarily unavailable"
-// fallback for every message. Its logs (Netlify → Logs → Functions) show
-// which cause it is — missing key, retired model, or quota. Both names can
-// now be overridden with Netlify env vars GEMINI_MODEL / GEMINI_MODEL_FALLBACK,
-// so a retired model is fixed from the dashboard without a code deploy.
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-const GEMINI_MODEL_FALLBACK = process.env.GEMINI_MODEL_FALLBACK || "gemini-2.0-flash-lite";
+// Gemini models. Root cause of the 2026 outage: the previous defaults
+// (gemini-2.0-flash / gemini-2.0-flash-lite) were shut down by Google on
+// 2026-06-01, so every call 404'd and visitors only ever saw the fallback.
+// Models are tried in order on 404 only (a bad key or quota wouldn't be fixed
+// by another model), ending with runtime discovery — see netlify/lib/gemini.js.
+// Both can still be overridden with Netlify env vars GEMINI_MODEL /
+// GEMINI_MODEL_FALLBACK.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+const GEMINI_MODEL_FALLBACK = process.env.GEMINI_MODEL_FALLBACK || DEFAULT_FALLBACK_MODEL;
 
 const KNOWLEDGE = buildKnowledgeSummary();
 
@@ -85,64 +81,47 @@ function fallbackResponse(escalate = false) {
   };
 }
 
-// Request URL carries `?key=...` — never log it (log status/model/body only).
-async function requestGemini(model, apiKey, systemPrompt, history, userMessage) {
-  return fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+// Same request as before; maxOutputTokens raised from 500 because newer Flash
+// models can spend part of the budget on internal reasoning before answering.
+function requestBody(systemPrompt, history, userMessage) {
+  return {
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    contents: [
+      ...history.map((h) => ({
+        role: h.role === "assistant" ? "model" : "user",
+        parts: [{ text: h.content }],
+      })),
+      { role: "user", parts: [{ text: userMessage }] },
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      temperature: 0.4,
+      maxOutputTokens: 1024,
+    },
+  };
+}
+
+// Never logs the request URL (it carries `?key=...`) or the key itself.
+function callGemini(systemPrompt, history, userMessage) {
+  return generate(
+    process.env.GEMINI_API_KEY,
+    () => requestBody(systemPrompt, history, userMessage),
     {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [
-          ...history.map((h) => ({
-            role: h.role === "assistant" ? "model" : "user",
-            parts: [{ text: h.content }],
-          })),
-          { role: "user", parts: [{ text: userMessage }] },
-        ],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.4, maxOutputTokens: 500 },
-      }),
+      models: [GEMINI_MODEL, GEMINI_MODEL_FALLBACK],
     },
   );
 }
 
-async function callGemini(systemPrompt, history, userMessage) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
-
-  let model = GEMINI_MODEL;
-  let res = await requestGemini(model, apiKey, systemPrompt, history, userMessage);
-
-  // A 404 here means the model itself is unavailable (retired, renamed, or
-  // not enabled for this key/tier) — retry once with the fallback model.
-  // Any other status (401/429/etc.) wouldn't be fixed by switching models,
-  // so it falls through to the error handling below instead.
-  if (res.status === 404) {
-    const primaryErrorBody = await res.text().catch(() => "<unreadable response body>");
-    console.error("[ai-concierge] Gemini primary model unavailable, retrying with fallback:", {
-      status: res.status,
-      model,
-      fallbackModel: GEMINI_MODEL_FALLBACK,
-      body: primaryErrorBody,
-    });
-    model = GEMINI_MODEL_FALLBACK;
-    res = await requestGemini(model, apiKey, systemPrompt, history, userMessage);
-  }
-
-  if (!res.ok) {
-    // Log status + response body for diagnosis — never the request URL
-    // (it carries `?key=...`) and never the key itself.
-    const errorBody = await res.text().catch(() => "<unreadable response body>");
-    console.error("[ai-concierge] Gemini API error:", { status: res.status, model, body: errorBody });
-    throw new Error(`Gemini request failed: ${res.status}`);
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
-}
-
 const ALLOWED_HREFS = new Set([
-  "/book", "/fleet", "/rates", "/airport", "/corporate", "/events", "/service-areas", "/join-our-team", "/contact",
+  "/book",
+  "/fleet",
+  "/rates",
+  "/airport",
+  "/corporate",
+  "/events",
+  "/service-areas",
+  "/join-our-team",
+  "/contact",
 ]);
 
 function parseAndValidate(raw) {
@@ -150,13 +129,18 @@ function parseAndValidate(raw) {
   try {
     parsed = JSON.parse(raw);
   } catch {
-    return fallbackResponse();
+    throw new ConciergeError("bad_response", "model output was not valid JSON");
   }
   const actions = Array.isArray(parsed.actions)
-    ? parsed.actions.filter((a) => a && typeof a.label === "string" && ALLOWED_HREFS.has(a.href)).slice(0, 3)
+    ? parsed.actions
+        .filter((a) => a && typeof a.label === "string" && ALLOWED_HREFS.has(a.href))
+        .slice(0, 3)
     : [];
   return {
-    message: typeof parsed.message === "string" ? parsed.message.slice(0, 2000) : fallbackResponse().message,
+    message:
+      typeof parsed.message === "string"
+        ? parsed.message.slice(0, 2000)
+        : fallbackResponse().message,
     intent: typeof parsed.intent === "string" ? parsed.intent : "general",
     actions,
     escalate: Boolean(parsed.escalate),
@@ -166,10 +150,17 @@ function parseAndValidate(raw) {
 export default async (req, context) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204 });
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: JSON_HEADERS,
+    });
   }
 
-  const ip = context?.ip || req.headers.get("x-nf-client-connection-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip =
+    context?.ip ||
+    req.headers.get("x-nf-client-connection-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
   if (isRateLimited(ip)) {
     return new Response(JSON.stringify(fallbackResponse()), { status: 429, headers: JSON_HEADERS });
   }
@@ -178,25 +169,40 @@ export default async (req, context) => {
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+      status: 400,
+      headers: JSON_HEADERS,
+    });
   }
 
   const message = (body.message ?? "").trim();
   if (!message || message.length > MAX_MESSAGE_LENGTH) {
-    return new Response(JSON.stringify({ error: "Invalid message" }), { status: 400, headers: JSON_HEADERS });
+    return new Response(JSON.stringify({ error: "Invalid message" }), {
+      status: 400,
+      headers: JSON_HEADERS,
+    });
   }
   const history = (body.history ?? []).slice(-MAX_HISTORY);
   const pageContext = body.pagePath ? `\nThe visitor is currently viewing: ${body.pagePath}` : "";
 
   try {
-    const raw = await callGemini(SYSTEM_PROMPT + pageContext, history, message);
-    const validated = parseAndValidate(raw);
-    return new Response(JSON.stringify(validated), { headers: JSON_HEADERS });
+    const { text, model } = await callGemini(SYSTEM_PROMPT + pageContext, history, message);
+    const validated = parseAndValidate(text);
+    return new Response(JSON.stringify(validated), {
+      headers: { ...JSON_HEADERS, "X-Concierge-Status": "ok", "X-Concierge-Model": model },
+    });
   } catch (err) {
-    console.error("[ai-concierge] provider error:", err);
+    const reason = err instanceof ConciergeError ? err.reason : "internal_error";
+    console.error("[ai-concierge] provider error:", { reason, error: err?.message });
     // Graceful degrade — frontend shows the fallback message, not a broken
     // spinner or raw error. Status 200 is intentional: this is a handled,
-    // clean JSON response, not a function failure.
-    return new Response(JSON.stringify(fallbackResponse()), { status: 200, headers: JSON_HEADERS });
+    // clean JSON response, not a function failure. X-Concierge-Status names
+    // the coarse failure class (e.g. model_unavailable, auth_error,
+    // quota_exceeded, missing_key) so the cause is visible without log access;
+    // it never contains keys, URLs or provider messages.
+    return new Response(JSON.stringify(fallbackResponse()), {
+      status: 200,
+      headers: { ...JSON_HEADERS, "X-Concierge-Status": reason },
+    });
   }
 };
