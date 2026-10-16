@@ -38,7 +38,7 @@
 
   # Content-Security-Policy — every third-party domain here is one actually
   # verified in this codebase (MyLimoBiz widget, Google Ads/GA4 tags,
-  # StatCounter, Google Fonts, Supabase). No wildcards, no blanket
+  # StatCounter, Supabase; fonts self-hosted). No wildcards, no blanket
   # unsafe-eval. `style-src 'unsafe-inline'` is a documented, deliberate
   # exception: this app styles many elements via inline `style={{}}` props
   # (dynamic gradients, GSAP-driven transforms) — removing it would require
@@ -64,7 +64,7 @@
   # "1p-user-list" remarketing pixel can load from a visitor's regional
   # Google TLD (e.g. google.com.eg) — CSP can't wildcard a TLD suffix, and
   # this is a redundant pixel, not the primary tracking beacon.
-  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com; media-src 'self'; upgrade-insecure-requests"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com https://www.googletagmanager.com https://www.googleadservices.com; connect-src 'self' https://c.statcounter.com https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com https://link.clienity.com; media-src 'self'; upgrade-insecure-requests"
 </IfModule>
 
 # ---------------------------------------------------------------------------
