@@ -139,6 +139,18 @@ function BookPage() {
               </div>
             )}
 
+            {status === "ready" && (
+              // widget-loader.js is in, but the iframe it creates stays
+              // transparent until MyLimoBiz's own page and ~200 KB
+              // stylesheet arrive — measured at 50s+ on a slow link
+              // (2026-10-16). This sits behind the slot (earlier in DOM
+              // order), so the booking window covers it as soon as it paints.
+              <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-3 px-6 pt-16 text-center">
+                <Loader2 className="h-6 w-6 animate-spin text-champagne" aria-hidden />
+                <p className="text-sm text-muted-foreground">Loading the secure booking window…</p>
+              </div>
+            )}
+
             {/* Live widget portals in here via #mylimobiz-slot once loaded */}
             <div id={MYLIMOBIZ_SLOT_ID} className="relative w-full" />
           </div>
