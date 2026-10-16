@@ -6,7 +6,7 @@
 
 @theme inline {
   --font-display: "Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope Variable", "Manrope", ui-sans-serif, system-ui, sans-serif;
 
   /* Proportional, not subtractive — with the site's deliberately tiny 0.2rem
      base radius (a sharp, architectural look, not a bubbly one), the
