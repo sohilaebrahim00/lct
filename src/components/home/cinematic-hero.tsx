@@ -184,7 +184,13 @@ export function CinematicHero() {
         style={{ background: "linear-gradient(to bottom, transparent, var(--surface-black))" }}
       />
 
-      <div className="hero-content relative z-[2] mx-auto w-full max-w-[var(--container-max)] px-[var(--page-gutter)] pb-16 pt-36 md:pb-24 lg:pb-28">
+      {/* Below `sm`, the two CTA buttons wrap onto two lines (see the
+          flex-wrap row below), pushing "Explore Our Fleet" down into the
+          same bottom-left band the fixed AI Concierge launcher occupies —
+          confirmed via screenshot the launcher covered the button's first
+          few letters. `sm:` and up the buttons fit on one line and never
+          reach that low, so the extra clearance is mobile-only. */}
+      <div className="hero-content relative z-[2] mx-auto w-full max-w-[var(--container-max)] px-[var(--page-gutter)] pb-[calc(140px+env(safe-area-inset-bottom))] pt-36 sm:pb-16 md:pb-24 lg:pb-28">
         <div className="hero-line mb-6 flex items-center gap-3">
           <span className="h-px w-10 bg-champagne/70" />
           <span className="eyebrow text-champagne">Dallas–Fort Worth · Grapevine</span>
@@ -247,17 +253,17 @@ export function CinematicHero() {
           </div>
         </div>
 
-        {/* Hidden below `sm`: on true mobile widths this row sits at the
-            same bottom-of-viewport band as the fixed WhatsApp/phone FABs
-            (bottom-right) and the AI Concierge launcher (bottom-left) —
-            confirmed via screenshot that the concierge button covers the
-            start of the phone number here. The row's own info (phone,
-            "request a quote") is already available via those FABs and the
-            header, so on mobile it's dropped rather than squeezed into an
-            ever-narrower gap between two FAB stacks. pr-20 still guards the
-            sm/md band where the row is visible but the right FAB stack can
-            still reach it. */}
-        <div className="hero-scroll mt-16 hidden items-center gap-6 pr-20 text-xs uppercase tracking-[0.28em] text-off-white/45 sm:flex lg:pr-0">
+        {/* Hidden below `lg`: this row sits at the same bottom-of-viewport
+            band as the fixed WhatsApp/phone FABs (bottom-right) and the AI
+            Concierge launcher (bottom-left), which only move to their
+            desktop position at `lg:bottom-6` (1024px) — an earlier `sm:flex`
+            (640px) reveal left a 640-1023px gap where this row and the FABs
+            both rendered in the same spot (confirmed via screenshot: the
+            phone/WhatsApp icons overlapped "Request a Quote"/"Scroll" on a
+            768px tablet). The row's own info (phone, "request a quote") is
+            already available via those FABs and the header, so below `lg`
+            it's dropped rather than squeezed into a shrinking FAB gap. */}
+        <div className="hero-scroll mt-16 hidden items-center gap-6 text-xs uppercase tracking-[0.28em] text-off-white/45 lg:flex">
           <a href={CONTACT.phoneTel} className="transition hover:text-champagne">
             {CONTACT.phoneDisplay}
           </a>

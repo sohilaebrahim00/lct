@@ -10,7 +10,7 @@ import { revealLines, revealClipImage } from "@/lib/reveal";
 
 export function SiteLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-background pb-[52px] text-foreground lg:pb-0">
+    <div className="min-h-screen bg-background pb-[calc(140px+env(safe-area-inset-bottom))] text-foreground lg:pb-0">
       <ScrollProgress />
       <SiteNav />
       <main>{children}</main>
