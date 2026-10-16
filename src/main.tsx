@@ -16,6 +16,10 @@ import "@fontsource/cormorant-garamond/400-italic.css";
 import "@fontsource/cormorant-garamond/500-italic.css";
 import "@fontsource-variable/manrope/wght.css";
 import "./styles.css";
+import { forwardMyLimoBizReturnToBook } from "./lib/mylimobiz-return-routing";
+
+// Before the router reads the URL — see the module for why.
+forwardMyLimoBizReturnToBook();
 
 const router = getRouter();
 
