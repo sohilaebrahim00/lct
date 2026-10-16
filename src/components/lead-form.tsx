@@ -171,6 +171,7 @@ export function LeadForm({
           setEmailWarn(true);
         }
       } else {
+        if (res.fieldErrors) setFieldErrors(res.fieldErrors);
         setState("error");
         setMessage(errorMessageFor(res.error));
       }
@@ -189,7 +190,10 @@ export function LeadForm({
 
   if (state === "success") {
     return (
-      <div className={variant === "bare" ? "border border-champagne/25 p-6 md:p-8" : shell}>
+      <div
+        role="status"
+        className={variant === "bare" ? "border border-champagne/25 p-6 md:p-8" : shell}
+      >
         <div className="flex items-start gap-4">
           <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-gradient text-onyx">
             <CheckCircle2 className="h-6 w-6" />
@@ -238,7 +242,8 @@ export function LeadForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         {fields.map((f) => {
-          const hiddenByGroup = activeGroup !== undefined && f.group !== undefined && f.group !== activeGroup;
+          const hiddenByGroup =
+            activeGroup !== undefined && f.group !== undefined && f.group !== activeGroup;
           return (
             <FieldRow
               key={f.name}
@@ -273,7 +278,10 @@ export function LeadForm({
       ) : null}
 
       {state === "error" ? (
-        <div className="flex items-start gap-2 rounded-md border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-200">
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-md border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-200"
+        >
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>{message}</div>
         </div>

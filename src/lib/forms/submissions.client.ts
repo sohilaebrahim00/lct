@@ -52,13 +52,24 @@ export async function submitFormClient(data: SubmissionInput): Promise<Submissio
 
   const parsed = submissionSchema.safeParse(data);
   if (!parsed.success) {
-    return { ok: false, error: "validation_failed" };
+    // Surface which fields failed so the form can actually highlight them
+    // (e.g. passengers "-1" passes the browser's number input but not the digits-only rule).
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const key = String(issue.path[0] ?? "");
+      if (key && !fieldErrors[key]) fieldErrors[key] = issue.message;
+    }
+    return { ok: false, error: "validation_failed", fieldErrors };
   }
   const v = parsed.data;
 
   const submissionHash = await computeSubmissionHash(data);
 
+  // Generated client-side (see the insert below for why the DB can't hand it back).
+  const id = newSubmissionId();
+
   const row = {
+    ...(id ? { id } : {}),
     form_type: v.formType,
     customer_name: v.customerName,
     customer_email: v.customerEmail,
@@ -84,11 +95,13 @@ export async function submitFormClient(data: SubmissionInput): Promise<Submissio
     raw_payload: JSON.parse(JSON.stringify(data)) as Json,
   };
 
-  const { data: inserted, error } = await supabase
-    .from("form_submissions")
-    .insert(row)
-    .select("id")
-    .single();
+  // No `.select("id")` read-back: anon only has an INSERT policy on this
+  // table (deliberately no SELECT policy — submissions hold customer PII),
+  // and PostgreSQL applies SELECT policies to INSERT ... RETURNING, so
+  // asking for the new row back made every insert fail with "new row
+  // violates row-level security policy" (42501). The id is generated here
+  // instead and sent with the row, so the caller still gets a real id.
+  const { error } = await supabase.from("form_submissions").insert(row);
 
   if (error) {
     if (import.meta.env.DEV) {
@@ -105,5 +118,9 @@ export async function submitFormClient(data: SubmissionInput): Promise<Submissio
   }
 
   markClientRateLimit();
-  return { ok: true, id: inserted?.id, status: "received" };
+  return { ok: true, id: id ?? undefined, status: "received" };
+}
+
+function newSubmissionId(): string | null {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : null;
 }
