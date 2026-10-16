@@ -199,10 +199,10 @@ export default async (req, context) => {
     // clean JSON response, not a function failure. X-Concierge-Status names
     // the coarse failure class (e.g. model_unavailable, auth_error,
     // quota_exceeded, missing_key) so the cause is visible without log access;
-    // it never contains keys, URLs or provider messages.
-    return new Response(JSON.stringify(fallbackResponse()), {
-      status: 200,
-      headers: { ...JSON_HEADERS, "X-Concierge-Status": reason },
-    });
+    // X-Concierge-Upstream is Google's last HTTP status code (0 = network
+    // error). Neither ever contains keys, URLs or provider messages.
+    const headers = { ...JSON_HEADERS, "X-Concierge-Status": reason };
+    if (Number.isInteger(err?.upstream)) headers["X-Concierge-Upstream"] = String(err.upstream);
+    return new Response(JSON.stringify(fallbackResponse()), { status: 200, headers });
   }
 };

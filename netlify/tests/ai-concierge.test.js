@@ -64,6 +64,40 @@ describe("ai-concierge function", () => {
     expect((await res.json()).message).toMatch(/temporarily unavailable/);
   });
 
+  it("rides through an overloaded model and reports Google's status when nothing works", async () => {
+    const answer = { message: "Hello", intent: "general", actions: [], escalate: false };
+    let calls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        ++calls === 1
+          ? new Response("{}", { status: 503 })
+          : new Response(
+              JSON.stringify({
+                candidates: [{ content: { parts: [{ text: JSON.stringify(answer) }] } }],
+              }),
+              {
+                status: 200,
+              },
+            ),
+      ),
+    );
+    const res = await ask("198.51.100.4");
+    expect(res.headers.get("X-Concierge-Status")).toBe("ok");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url) =>
+        String(url).includes("/models?")
+          ? new Response(JSON.stringify({ models: [] }), { status: 200 })
+          : new Response("{}", { status: 503 }),
+      ),
+    );
+    const failed = await ask("198.51.100.5");
+    expect(failed.headers.get("X-Concierge-Status")).toBe("provider_error");
+    expect(failed.headers.get("X-Concierge-Upstream")).toBe("503");
+  });
+
   it("flags non-JSON model output instead of silently masking it", async () => {
     vi.stubGlobal(
       "fetch",
