@@ -952,3 +952,22 @@ html.cursor-none iframe {
   .fab-btn { transition: none; }
   .fab-btn:hover .fab-dot::after { animation: none; }
 }
+
+/*
+ * MyLimoBiz "Client Login" iframe (src/components/booking/mylimobiz-login-popover.tsx).
+ * MyLimoBiz's widget-loader.js creates it with scrolling="no" and no height,
+ * so it starts at the browser default of 150px. Its iFrame Resizer (v3.6.0,
+ * 2018) only measures the form after the iframe's *entire* page has finished
+ * loading — reproduced on production 2026-10-16: for ~4s on a fast link and
+ * nearly a minute on a slow one, the form (261px tall at every width) was cut
+ * off below the password field with no way to scroll to "Log in" or "Register
+ * Now". Reserve the full form height (plus room for one validation message)
+ * until the resizer writes its own inline height; from then on the iframe is
+ * exactly as tall as MyLimoBiz asks, so no extra space is left behind.
+ */
+.mylimobiz-login-frame iframe.ores4iframe {
+  display: block;
+}
+.mylimobiz-login-frame iframe.ores4iframe:not([style*="height"]) {
+  min-height: 300px;
+}
