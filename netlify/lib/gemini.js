@@ -17,9 +17,11 @@ export const DEFAULT_FALLBACK_MODEL = "gemini-flash-latest";
 const API = "https://generativelanguage.googleapis.com/v1beta";
 
 export class ConciergeError extends Error {
-  constructor(reason, detail) {
+  /** `upstream` is Google's HTTP status code (0 = network error), if any. */
+  constructor(reason, detail, upstream) {
     super(`${reason}: ${detail}`);
     this.reason = reason;
+    this.upstream = upstream;
   }
 }
 
@@ -77,10 +79,17 @@ export function extractText(data) {
  * wouldn't be fixed by another model). Returns { text, model } or throws a
  * ConciergeError with a classified `reason`. Never logs the key or URL.
  */
+// 404 = model retired/unknown; 5xx = Google-side failure (e.g. 503 "model
+// overloaded", seen on 2 of 3 live requests right after the 2026-10-16
+// deploy). Both can succeed on a different model, so the chain moves on.
+// 400/401/403/429 stop immediately — another model won't fix a bad key,
+// quota, or request.
+const tryNextModel = (status) => status === 404 || status >= 500;
+
 export async function generate(
   apiKey,
   buildBody,
-  { models, fetchImpl = fetch, timeoutMs = 6000, budgetMs = 8000 } = {},
+  { models, fetchImpl = fetch, timeoutMs = 6000, budgetMs = 8500 } = {},
 ) {
   if (!apiKey) throw new ConciergeError("missing_key", "GEMINI_API_KEY not configured");
   const started = Date.now();
@@ -98,12 +107,14 @@ export async function generate(
     }
     const model = queue.shift();
     if (!model || tried.has(model)) continue;
-    if (Date.now() - started > budgetMs)
-      throw new ConciergeError("timeout", "time budget exhausted");
+    // Each call gets what's left of the budget, so the function always answers
+    // before Netlify's 10 s limit instead of timing out with a 502.
+    const remaining = budgetMs - (Date.now() - started);
+    if (remaining < 1500) break;
     tried.add(model);
 
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), timeoutMs);
+    const timer = setTimeout(() => ctl.abort(), Math.min(timeoutMs, remaining));
     let res;
     try {
       res = await fetchImpl(`${API}/models/${model}:generateContent?key=${apiKey}`, {
@@ -113,10 +124,13 @@ export async function generate(
         signal: ctl.signal,
       });
     } catch (err) {
-      throw new ConciergeError(
-        err?.name === "AbortError" ? "timeout" : "provider_error",
-        `${model}: ${err?.message ?? err}`,
-      );
+      if (err?.name === "AbortError") {
+        throw new ConciergeError("timeout", `${model} timed out`, last?.status);
+      }
+      // Network-level failure: another model/connection may work.
+      last = { status: 0, model, body: String(err?.message ?? err).slice(0, 200) };
+      console.error("[ai-concierge] Gemini network error:", last);
+      continue;
     } finally {
       clearTimeout(timer);
     }
@@ -129,11 +143,15 @@ export async function generate(
     const body = await res.text().catch(() => "");
     last = { status: res.status, model, body: body.slice(0, 300) };
     console.error("[ai-concierge] Gemini error:", last);
-    if (res.status !== 404)
-      throw new ConciergeError(classify(res.status, body), `${model} ${res.status}`);
+    if (!tryNextModel(res.status)) {
+      throw new ConciergeError(classify(res.status, body), `${model} ${res.status}`, res.status);
+    }
   }
+  if (!last) throw new ConciergeError("timeout", "time budget exhausted");
+  const reason = last.status === 404 ? "model_unavailable" : "provider_error";
   throw new ConciergeError(
-    "model_unavailable",
-    `no available model (last: ${last?.model} ${last?.status})`,
+    reason,
+    `no model succeeded (last: ${last.model} ${last.status})`,
+    last.status,
   );
 }
