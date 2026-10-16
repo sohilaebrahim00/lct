@@ -116,16 +116,24 @@ export function MyLimoBizLoginPopover({
         footer's own always-mounted instance — the anchor would render but
         never get converted into a working iframe.
       */}
+      {/*
+        Layout (2026-10-16): header / scrollable body / footer. The body
+        (welcome note + MyLimoBiz iframe) is the only part that scrolls, so
+        on a short screen every control in the login form stays reachable,
+        and the "Trouble loading?" footer can never sit on top of or inside
+        the form. Heights use dynamic viewport units (with a vh fallback) so
+        a mobile browser's toolbars can't hide the bottom of the panel.
+      */}
       <div
         ref={panelRef}
         role="dialog"
         aria-label="Client Login"
         hidden={!open}
-        className={`fixed inset-x-4 top-1/2 z-50 max-h-[80vh] -translate-y-1/2 overflow-y-auto rounded-sm border border-gold/30 bg-[color:var(--surface-elevated)] shadow-[var(--shadow-luxe)] lg:absolute lg:inset-x-auto lg:top-full lg:mt-3 lg:w-[min(20rem,90vw)] lg:max-h-[75vh] lg:translate-y-0 ${
+        className={`fixed inset-x-4 top-1/2 z-50 flex max-h-[85vh] -translate-y-1/2 flex-col overflow-hidden rounded-sm border border-gold/30 bg-[color:var(--surface-elevated)] shadow-[var(--shadow-luxe)] supports-[height:100dvh]:max-h-[85dvh] lg:absolute lg:inset-x-auto lg:top-full lg:mt-3 lg:w-[min(20rem,90vw)] lg:max-h-[calc(100vh-7rem)] lg:translate-y-0 lg:supports-[height:100dvh]:max-h-[calc(100dvh-7rem)] ${
           panelAlign === "right" ? "lg:right-0" : "lg:left-0"
         }`}
       >
-        <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border/60 px-4 py-3">
           <span className="eyebrow text-gold">{label}</span>
           <button
             type="button"
@@ -150,46 +158,50 @@ export function MyLimoBizLoginPopover({
             the visitor's actual account, reservations, and profile — this
             note just makes that explicit instead of leaving a returning
             visitor to wonder why "My Account" still shows a login form. */}
-        {authenticated ? (
-          <div className="border-b border-border/60 bg-black/10 px-4 py-3">
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Welcome back. Continue below to reach your account, reservations, and profile in
-              your MyLimoBiz portal.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setMyLimoBizAuthenticated(false);
-                setOpen(false);
-              }}
-              className="mt-2 text-[0.7rem] font-semibold uppercase tracking-widest text-gold underline-offset-2 transition hover:text-champagne hover:underline"
-            >
-              Not you? Sign out of this device
-            </button>
-          </div>
-        ) : null}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          {authenticated ? (
+            <div className="border-b border-border/60 bg-black/10 px-4 py-3">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Welcome back. Continue below to reach your account, reservations, and profile in
+                your MyLimoBiz portal.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setMyLimoBizAuthenticated(false);
+                  setOpen(false);
+                }}
+                className="mt-2 text-[0.7rem] font-semibold uppercase tracking-widest text-gold underline-offset-2 transition hover:text-champagne hover:underline"
+              >
+                Not you? Sign out of this device
+              </button>
+            </div>
+          ) : null}
 
-        {/* MyLimoBiz's own login iframe renders inside here, unstyled by
+          {/* MyLimoBiz's own login iframe renders inside here, unstyled by
             us beyond width/scroll constraints on this panel — same
             cross-origin limitation already accepted for the booking
             widget on /book. */}
-        {/* Loading state (2026-10-16): the iframe is transparent until
+          {/* Loading state (2026-10-16): the iframe is transparent until
             MyLimoBiz's page and stylesheet arrive, which took 40s+ on a
             slow link and left this panel an empty black box. The message
             sits behind the iframe (earlier in DOM order) and is covered as
             soon as the login form paints. The raw anchor is sr-only so it
             doesn't overlap the message before widget-loader.js swaps it
             for the iframe — it stays a working link for screen readers. */}
-        <div className="relative min-h-[150px]">
-          <div className="absolute inset-x-0 top-0 flex items-center gap-2 px-4 py-6 text-xs text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin text-gold" aria-hidden />
-            Loading secure client login…
-          </div>
-          <div className="relative">
-            <MyLimoBizLoginButton anchorClassName="sr-only" />
+          {/* `mylimobiz-login-frame` reserves the login form's full height
+            until MyLimoBiz's resizer has measured it — see styles.css. */}
+          <div className="mylimobiz-login-frame relative min-h-[150px]">
+            <div className="absolute inset-x-0 top-0 flex items-center gap-2 px-4 py-6 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-gold" aria-hidden />
+              Loading secure client login…
+            </div>
+            <div className="relative">
+              <MyLimoBizLoginButton anchorClassName="sr-only" />
+            </div>
           </div>
         </div>
-        <div className="border-t border-border/60 px-4">
+        <div className="shrink-0 border-t border-border/60 px-4">
           <a
             href={BOOKING.url}
             target="_blank"
