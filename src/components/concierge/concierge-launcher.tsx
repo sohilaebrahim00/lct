@@ -21,6 +21,12 @@ export function ConciergeLauncher() {
   const dialogId = useId();
   const menuOpen = useSyncExternalStore(subscribeMobileMenuOpen, getMobileMenuOpenSnapshot, getMobileMenuOpenServerSnapshot);
 
+  // /fleet swaps in a taller (64px) FleetConversionBar instead of the 52px
+  // MobileBookBar — mirrors the same onFleet branch already used by
+  // FloatingActions (src/components/floating-actions.tsx) so every floating
+  // element keeps a consistent gap above whichever bottom bar is showing.
+  const onFleet = pathname === "/fleet";
+
   const closePanel = useCallback(() => {
     setOpen(false);
     requestAnimationFrame(() => launcherRef.current?.focus());
@@ -49,7 +55,11 @@ export function ConciergeLauncher() {
         aria-expanded={open}
         aria-controls={dialogId}
         aria-label={open ? "Close AI Concierge" : "Open AI Concierge"}
-        className="fixed bottom-[calc(52px+env(safe-area-inset-bottom)+0.75rem)] left-4 z-[45] flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 bg-[color:var(--surface-elevated)] text-gold shadow-[var(--shadow-gold)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:bottom-6"
+        className={
+          onFleet
+            ? "fixed bottom-[calc(64px+env(safe-area-inset-bottom)+0.75rem)] left-4 z-[45] flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 bg-[color:var(--surface-elevated)] text-gold shadow-[var(--shadow-gold)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:bottom-[calc(64px+0.75rem)]"
+            : "fixed bottom-[calc(52px+env(safe-area-inset-bottom)+0.75rem)] left-4 z-[45] flex h-14 w-14 items-center justify-center rounded-full border border-gold/40 bg-[color:var(--surface-elevated)] text-gold shadow-[var(--shadow-gold)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:bottom-6"
+        }
       >
         {open ? <X className="h-5 w-5" aria-hidden /> : <MessageCircle className="h-5 w-5" aria-hidden />}
       </button>

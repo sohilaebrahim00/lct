@@ -23,8 +23,14 @@ import { buildKnowledgeSummary } from "./ai-concierge-knowledge.js";
 // tried automatically, once, only if the primary model itself 404s as
 // unavailable — not for other errors (an invalid key or rate limit
 // wouldn't be fixed by switching models).
-const GEMINI_MODEL = "gemini-2.0-flash";
-const GEMINI_MODEL_FALLBACK = "gemini-2.0-flash-lite";
+//
+// 2026-10-16: the live function was returning its "temporarily unavailable"
+// fallback for every message. Its logs (Netlify → Logs → Functions) show
+// which cause it is — missing key, retired model, or quota. Both names can
+// now be overridden with Netlify env vars GEMINI_MODEL / GEMINI_MODEL_FALLBACK,
+// so a retired model is fixed from the dashboard without a code deploy.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL_FALLBACK = process.env.GEMINI_MODEL_FALLBACK || "gemini-2.0-flash-lite";
 
 const KNOWLEDGE = buildKnowledgeSummary();
 

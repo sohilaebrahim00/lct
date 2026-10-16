@@ -222,7 +222,7 @@ function FleetConversionBar({
             to="/book"
             data-cursor="book"
             onMouseDown={trackBookMouseDown(vehicle)}
-            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-sm bg-gold-gradient px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-widest text-onyx shadow-[var(--shadow-gold)] transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap rounded-sm bg-gold-gradient px-4 py-3 text-[0.65rem] font-semibold uppercase tracking-widest text-onyx shadow-[var(--shadow-gold)] transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {label}
           </Link>
@@ -231,7 +231,7 @@ function FleetConversionBar({
             type="button"
             data-cursor="explore"
             onClick={() => onQuote(vehicle)}
-            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-sm bg-gold-gradient px-4 py-2.5 text-[0.65rem] font-semibold uppercase tracking-widest text-onyx shadow-[var(--shadow-gold)] transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap rounded-sm bg-gold-gradient px-4 py-3 text-[0.65rem] font-semibold uppercase tracking-widest text-onyx shadow-[var(--shadow-gold)] transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {label}
           </button>

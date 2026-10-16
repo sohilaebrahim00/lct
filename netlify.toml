@@ -25,8 +25,8 @@
 # ---------------------------------------------------------------------------
 # Security headers — identical policy to public/.htaccess (kept in sync
 # manually; every third-party domain here is one actually verified in this
-# codebase: MyLimoBiz widget, Google Ads/GA4 tags, StatCounter, Google
-# Fonts, Supabase).
+# codebase: MyLimoBiz widget, Google Ads/GA4 tags, StatCounter,
+# Supabase; fonts are self-hosted, no Google Fonts).
 # ---------------------------------------------------------------------------
 [[headers]]
   for = "/*"
@@ -72,7 +72,19 @@
     # prefix, so this can't be fully closed without an unreasonably long
     # per-country allowlist; low-severity since it's a redundant pixel, not
     # the primary tracking beacon (which succeeds via connect-src above).
-    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com; connect-src 'self' https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com; media-src 'self'; upgrade-insecure-requests"
+    #
+    # 2026-10-16 audit — three more real violations found by sweeping every
+    # live route in headless Chromium and reading the CSP console errors:
+    #   * frame-src https://link.clienity.com — /join-our-team's three
+    #     application forms (driver / company partner / referral) are
+    #     Clienity iframes and were being blocked outright ("Framing
+    #     'https://link.clienity.com/' violates ... frame-src").
+    #   * connect-src https://c.statcounter.com — StatCounter's t.php beacon
+    #     was blocked on every page, so no StatCounter visits were recorded.
+    #   * img-src https://www.googletagmanager.com https://www.googleadservices.com
+    #     — the Ads conversion pixel (googleadservices.com/ccm/conversion, fired
+    #     on /book) and GTM's /td and /a pixels were blocked.
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://book.mylimobiz.com https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.googleadservices.com https://statcounter.com https://www.statcounter.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://c.statcounter.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://www.google.com https://www.googletagmanager.com https://www.googleadservices.com; connect-src 'self' https://c.statcounter.com https://gqjzrkossjayendtjxxp.supabase.co wss://gqjzrkossjayendtjxxp.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://www.googleadservices.com https://www.google.com https://book.mylimobiz.com; frame-src https://book.mylimobiz.com https://www.googletagmanager.com https://link.clienity.com; media-src 'self'; upgrade-insecure-requests"
 
 # Hashed build assets (js/css/images/video/fonts all land in dist/assets/) are
 # immutable — safe to cache for a year.

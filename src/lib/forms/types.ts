@@ -55,4 +55,6 @@ export interface SubmissionResult {
   companyEmailSent?: boolean;
   customerEmailSent?: boolean;
   error?: string;
+  /** Per-field messages when `error === "validation_failed"`, keyed by input name. */
+  fieldErrors?: Record<string, string>;
 }

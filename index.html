@@ -31,15 +31,26 @@
       every page (this was verified happening before this fix).
     -->
     <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Loaded statically (not via head()) so the browser can start
-         fetching font CSS before JS parses — the actual families the site
-         uses (Cormorant Garamond display / Manrope body, see styles.css). -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Fonts are self-hosted via @fontsource (imported in src/main.tsx),
+         not loaded from fonts.googleapis.com: a render-blocking third-party
+         stylesheet here blanked the whole site on networks that silently
+         drop Google Fonts (module scripts wait for pending stylesheets). -->
   </head>
   <body>
     <div id="root"></div>
+    <!-- Shown only when JavaScript is disabled or stripped (some business
+         web proxies remove scripts from sites they haven't categorized) —
+         the SPA renders nothing at all in that case, so this keeps a way
+         to reach the company instead of a blank page. -->
+    <noscript>
+      <div style="max-width:32rem;margin:15vh auto;padding:0 1rem;font-family:Georgia,serif;color:#f4efe6;background:#141210;text-align:center;line-height:1.6">
+        <h1 style="font-weight:500">LCT Universal Executive Transports</h1>
+        <p>Premium chauffeured transportation in Dallas–Fort Worth, available 24/7.</p>
+        <p>This site needs JavaScript. To book or request a quote, call
+          <a href="tel:+18886154065" style="color:#d4b46a">+1 (888) 615-4065</a> or email
+          <a href="mailto:reservations@lctuniversal.com" style="color:#d4b46a">reservations@lctuniversal.com</a>.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

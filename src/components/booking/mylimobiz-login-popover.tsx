@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { LogIn, X } from "lucide-react";
+import { ExternalLink, Loader2, LogIn, X } from "lucide-react";
 import { MyLimoBizLoginButton } from "./mylimobiz-login-button";
+import { BOOKING } from "@/lib/site-data";
 import {
   getMyLimoBizAuthenticatedServerSnapshot,
   getMyLimoBizAuthenticatedSnapshot,
@@ -172,7 +173,33 @@ export function MyLimoBizLoginPopover({
             us beyond width/scroll constraints on this panel — same
             cross-origin limitation already accepted for the booking
             widget on /book. */}
-        <MyLimoBizLoginButton anchorClassName="block px-4 py-4 text-sm text-foreground/80" />
+        {/* Loading state (2026-10-16): the iframe is transparent until
+            MyLimoBiz's page and stylesheet arrive, which took 40s+ on a
+            slow link and left this panel an empty black box. The message
+            sits behind the iframe (earlier in DOM order) and is covered as
+            soon as the login form paints. The raw anchor is sr-only so it
+            doesn't overlap the message before widget-loader.js swaps it
+            for the iframe — it stays a working link for screen readers. */}
+        <div className="relative min-h-[150px]">
+          <div className="absolute inset-x-0 top-0 flex items-center gap-2 px-4 py-6 text-xs text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-gold" aria-hidden />
+            Loading secure client login…
+          </div>
+          <div className="relative">
+            <MyLimoBizLoginButton anchorClassName="sr-only" />
+          </div>
+        </div>
+        <div className="border-t border-border/60 px-4">
+          <a
+            href={BOOKING.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center gap-1.5 text-xs text-muted-foreground transition hover:text-champagne"
+          >
+            Trouble loading? Open client login in a new tab
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          </a>
+        </div>
       </div>
     </div>
   );

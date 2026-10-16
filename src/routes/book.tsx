@@ -51,9 +51,15 @@ function BookPage() {
 
   return (
     <SiteLayout>
-      <section ref={rootRef} className="mx-auto max-w-4xl px-[var(--page-gutter)] pt-36 pb-24 md:pt-44">
+      <section ref={rootRef} className="mx-auto max-w-4xl px-[var(--page-gutter)] pt-28 pb-24 sm:pt-36 md:pt-44">
         <div className="book-intro text-center">
-          <div className="mx-auto mb-6 h-20 w-20 overflow-hidden rounded-full ring-1 ring-champagne/40 shadow-[var(--shadow-luxe)]">
+          {/* Smaller + tighter margin on mobile only: on a short viewport
+              (e.g. iPhone SE, 667px) the full-size intro pushed the panel's
+              "Secure booking window" row down into the same band the fixed
+              WhatsApp/phone/Concierge FABs occupy — confirmed via
+              screenshot. Trimming this decorative photo and the section's
+              top padding moves the panel high enough to clear it. */}
+          <div className="mx-auto mb-4 h-16 w-16 overflow-hidden rounded-full ring-1 ring-champagne/40 shadow-[var(--shadow-luxe)] sm:mb-6 sm:h-20 sm:w-20">
             <img
               src={experience.src}
               alt={experience.alt}
@@ -80,14 +86,14 @@ function BookPage() {
           </div>
         </div>
 
-        <div className="book-panel luxe-card mt-12 overflow-hidden rounded-sm p-2 md:p-4">
+        <div className="book-panel luxe-card mt-8 overflow-hidden rounded-sm p-2 sm:mt-12 md:p-4">
           <div className="flex items-center justify-between gap-3 px-3 pb-3 pt-2 md:px-4">
             <span className="text-xs text-muted-foreground">Secure booking window</span>
             <a
               href={BOOKING.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-champagne"
+              className="inline-flex min-h-11 items-center gap-1.5 text-xs text-muted-foreground transition hover:text-champagne"
             >
               Open in a new tab
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -130,6 +136,18 @@ function BookPage() {
                     Call {CONTACT.phoneDisplay}
                   </a>
                 </div>
+              </div>
+            )}
+
+            {status === "ready" && (
+              // widget-loader.js is in, but the iframe it creates stays
+              // transparent until MyLimoBiz's own page and ~200 KB
+              // stylesheet arrive — measured at 50s+ on a slow link
+              // (2026-10-16). This sits behind the slot (earlier in DOM
+              // order), so the booking window covers it as soon as it paints.
+              <div className="absolute inset-x-0 top-0 flex flex-col items-center gap-3 px-6 pt-16 text-center">
+                <Loader2 className="h-6 w-6 animate-spin text-champagne" aria-hidden />
+                <p className="text-sm text-muted-foreground">Loading the secure booking window…</p>
               </div>
             )}
 
