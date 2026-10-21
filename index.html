@@ -21,14 +21,13 @@
       gtag('config', 'AW-18237817494');
     </script>
     <!--
-      No static <title>/<meta name="description">/<meta name="theme-color">
-      here on purpose: `__root.tsx`'s `head()` (via TanStack Router's
-      <HeadContent/>) is the single source for these, with each route's own
-      `head()` overriding it per-page. HeadContent appends its managed tags
-      rather than replacing pre-existing static ones with the same
-      name/property, so a static tag here would sit alongside — not
-      override — the dynamic one, producing two <title>/description tags on
-      every page (this was verified happening before this fix).
+      The sitewide <title>/description/Open Graph tags and JSON-LD are
+      written in at build time by the staticCrawlerContent plugin
+      (vite.config.ts, data in src/lib/site-head.ts), so crawlers that do not
+      run JavaScript see them. main.tsx removes those static copies before
+      React renders: <HeadContent/> appends its managed tags rather than
+      replacing pre-existing ones, so leaving them would produce two
+      <title>/description tags on every page.
     -->
     <link rel="icon" href="/favicon.png" type="image/png" />
     <!-- Fonts are self-hosted via @fontsource (imported in src/main.tsx),
@@ -37,20 +36,11 @@
          drop Google Fonts (module scripts wait for pending stylesheets). -->
   </head>
   <body>
+    <!-- Filled at build time with a plain-HTML summary of the business
+         (staticCrawlerContent in vite.config.ts), including the no-JavaScript
+         fallback that used to be a <noscript> block here. React replaces it
+         on its first render. -->
     <div id="root"></div>
-    <!-- Shown only when JavaScript is disabled or stripped (some business
-         web proxies remove scripts from sites they haven't categorized) —
-         the SPA renders nothing at all in that case, so this keeps a way
-         to reach the company instead of a blank page. -->
-    <noscript>
-      <div style="max-width:32rem;margin:15vh auto;padding:0 1rem;font-family:Georgia,serif;color:#f4efe6;background:#141210;text-align:center;line-height:1.6">
-        <h1 style="font-weight:500">LCT Universal Executive Transports</h1>
-        <p>Premium chauffeured transportation in Dallas–Fort Worth, available 24/7.</p>
-        <p>This site needs JavaScript. To book or request a quote, call
-          <a href="tel:+18886154065" style="color:#d4b46a">+1 (888) 615-4065</a> or email
-          <a href="mailto:reservations@lctuniversal.com" style="color:#d4b46a">reservations@lctuniversal.com</a>.</p>
-      </div>
-    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

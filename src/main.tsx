@@ -17,9 +17,15 @@ import "@fontsource/cormorant-garamond/500-italic.css";
 import "@fontsource-variable/manrope/wght.css";
 import "./styles.css";
 import { forwardMyLimoBizReturnToBook } from "./lib/mylimobiz-return-routing";
+import { STATIC_HEAD_ATTR } from "./lib/site-head";
 
 // Before the router reads the URL — see the module for why.
 forwardMyLimoBizReturnToBook();
+
+// The static title/meta/JSON-LD written into index.html for non-JS crawlers
+// (see src/lib/site-head.ts). <HeadContent/> appends its own copies rather
+// than replacing them, so drop the static ones before it renders.
+document.querySelectorAll(`[${STATIC_HEAD_ATTR}]`).forEach((el) => el.remove());
 
 const router = getRouter();
 
