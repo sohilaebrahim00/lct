@@ -32,6 +32,15 @@ export default defineConfig({
   ],
   server: { host: "0.0.0.0", port: 5173 },
   build: {
+    // Oldest browsers the site must still render in: Chrome/Edge 109 (the
+    // last release on Windows 7/8.1, still common on office PCs), Firefox 115
+    // ESR, Safari/iOS 15. Vite 7's default targets Chrome 107 / Safari 16 for
+    // JS and leaves CSS untouched; Tailwind defines the palette in oklch(),
+    // which Chrome/Edge < 111 ignore, blanking every brand color. Lightning
+    // CSS lowers CSS to these targets (hex fallbacks, oklch kept behind
+    // @supports) and esbuild lowers JS syntax to match.
+    target: ["es2020", "chrome109", "edge109", "firefox115", "safari15", "ios15"],
+    cssMinify: "lightningcss",
     // Never inline self-hosted font subsets as data: URIs (Vite inlines
     // anything under 4 kB by default) — the CSP's `font-src 'self'` blocks
     // data: fonts, and keeping it that way is tighter than allowing data:.
