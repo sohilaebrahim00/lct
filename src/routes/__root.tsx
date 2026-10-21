@@ -6,7 +6,7 @@ import { RouteTransition } from "@/components/route-transition";
 import { Cursor } from "@/components/luxury/cursor";
 import { MyLimoBizWidgetHost } from "@/components/booking/mylimobiz-widget";
 import { Analytics } from "@/components/analytics";
-import { COMPANY, CONTACT, SERVICE_AREA_GROUPS } from "@/lib/site-data";
+import { ROOT_JSON_LD, ROOT_META } from "@/lib/site-head";
 
 function NotFoundComponent() {
   // A static-hosted SPA fallback (see public/.htaccess) always serves this
@@ -90,39 +90,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "LCT Universal — Executive Transportation in Dallas–Fort Worth" },
-      {
-        name: "description",
-        content:
-          "LCT Universal Executive Transports — premium chauffeured transportation in Dallas–Fort Worth and Grapevine, Texas. Airport transfers, corporate travel, and VIP service. Available 24/7.",
-      },
-      { name: "author", content: "LCT Universal" },
-      { name: "theme-color", content: "#141210" },
-      {
-        property: "og:title",
-        content: "LCT Universal — Executive Transportation in Dallas–Fort Worth",
-      },
-      {
-        property: "og:description",
-        content:
-          "Premium chauffeured transportation in Dallas–Fort Worth and Grapevine, Texas. Airport transfers, corporate travel, and VIP service.",
-      },
-      { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "LCT Universal" },
-      { name: "twitter:card", content: "summary_large_image" },
-      {
-        name: "twitter:title",
-        content: "LCT Universal — Executive Transportation in Dallas–Fort Worth",
-      },
-      {
-        name: "twitter:description",
-        content: "Premium chauffeured transportation in Dallas–Fort Worth and Grapevine, Texas.",
-      },
-      { property: "og:image", content: `${CONTACT.siteUrl}/assets/official/group-coach-bus.jpg` },
-    ],
+    meta: ROOT_META,
     links: [
       { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/favicon.png" },
@@ -146,75 +114,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       // (mobile-first performance pass) — the actual Hero image now has
       // its own correct, breakpoint-specific preload in index.tsx.
     ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "LocalBusiness",
-          name: COMPANY.legalName,
-          alternateName: COMPANY.name,
-          image: `${CONTACT.siteUrl}/assets/official/group-coach-bus.jpg`,
-          url: CONTACT.siteUrl,
-          telephone: CONTACT.phoneDisplay,
-          email: CONTACT.email,
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: CONTACT.city,
-            addressRegion: "TX",
-            postalCode: CONTACT.zip,
-            addressCountry: "US",
-          },
-          // Updated 2026-08-11 — was a single free-text string
-          // (CONTACT.serviceRegion); the client explicitly asked for the
-          // full DFW Metroplex coverage list to be represented in
-          // structured data via `areaServed`. An array of real City names
-          // does not claim a physical branch office in each one (that
-          // claim only exists in the single `address` field above, which
-          // is untouched) — schema.org's own guidance is that `areaServed`
-          // states coverage, not location.
-          areaServed: SERVICE_AREA_GROUPS.flatMap((g) => g.cities).map((name) => ({
-            "@type": "City",
-            name,
-          })),
-          openingHoursSpecification: {
-            "@type": "OpeningHoursSpecification",
-            dayOfWeek: [
-              "Monday",
-              "Tuesday",
-              "Wednesday",
-              "Thursday",
-              "Friday",
-              "Saturday",
-              "Sunday",
-            ],
-            opens: "00:00",
-            closes: "23:59",
-          },
-          // Symbolic tier indicator, not a literal quoted figure — the old
-          // site's fixed "$100/hour" style rates were confirmed inaccurate
-          // against the live booking system (2026-08-08) and dropped
-          // site-wide; schema.org's priceRange accepts this "$"-style
-          // symbolic form specifically for cases like this.
-          priceRange: "$$$",
-          sameAs: [
-            CONTACT.facebookUrl,
-            CONTACT.instagramUrl,
-            CONTACT.tiktokUrl,
-            CONTACT.youtubeUrl,
-          ].filter((url): url is string => Boolean(url)),
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: COMPANY.name,
-          url: CONTACT.siteUrl,
-        }),
-      },
-    ],
+    scripts: ROOT_JSON_LD.map((data) => ({
+      type: "application/ld+json",
+      children: JSON.stringify(data),
+    })),
   }),
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

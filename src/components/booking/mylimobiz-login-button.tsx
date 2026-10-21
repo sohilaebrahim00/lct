@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { BOOKING } from "@/lib/site-data";
-import { ensureMyLimoBizScript } from "./mylimobiz-widget";
 
 /**
  * MyLimoBiz "Client Login" widget button — same `data-ores-widget` pattern
@@ -17,6 +16,16 @@ import { ensureMyLimoBizScript } from "./mylimobiz-widget";
  * so the same escape hatch applies: the anchor is created with plain DOM
  * APIs and appended into a host `<div>` that JSX never describes children
  * for, so React has nothing of its own to reconcile there.
+ *
+ * The anchor is created on mount, but this component no longer loads
+ * `widget-loader.js` itself: `MyLimoBizLoginPopover` loads it when a visitor
+ * reaches for "Client Login" (and `/book` loads it for the booking widget).
+ * Loading it on mount converted every anchor on every page — three login
+ * iframes plus the hidden booking iframe — which pulled ~3.4 MB and 118
+ * requests (MyLimoBiz, Google Maps, Stripe, Facebook, LogRocket, Square) into
+ * every page view, held the load event for 5–19 s, and ran MyLimoBiz's
+ * first-visit Safari redirect to book.mylimobiz.com on whatever page a
+ * Safari visitor opened first (measured 2026-10-21).
  */
 
 const LOGIN_URL = `${BOOKING.url}/widget/login`;
@@ -39,8 +48,6 @@ export function MyLimoBizLoginButton({ anchorClassName }: { anchorClassName: str
     anchor.textContent = "Client Login";
     anchor.className = anchorClassName;
     host.appendChild(anchor);
-
-    ensureMyLimoBizScript();
   }, [anchorClassName]);
 
   // `className="contents"` keeps this wrapper out of flex/flow layout math

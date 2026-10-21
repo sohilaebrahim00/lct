@@ -16,6 +16,44 @@ Globalping measurement IDs (open `https://globalping.io/?measurement=<id>` while
 - `2SI6ltLFlCjY18BLv00021KOA`: www.lctuniversal.com from the same probes
 - `2LsJXa51PtOF4UPDW00021KOA`: lctuniversal.com from 20 US datacenter networks, 20/20 OK
 
+## Evidence (October 21, 2026): ISP router security
+
+A business office reported Chrome showing `ERR_SSL_PROTOCOL_ERROR` ("lctuniversal.com sent an invalid response") on its Wi-Fi. The site itself checked clean: DNS points only to Netlify (apex `75.2.60.5`, `www` CNAME to `lctuniversaltransport.netlify.app`, no stray AAAA), the Let's Encrypt certificate covers both names, and TLS 1.2/1.3 work. 30/30 US home ISP probes and 15/15 Texas probes loaded `https://lctuniversal.com/`.
+
+One Comcast home network (Seattle, AS7922) reproduced the error exactly:
+
+- `https://lctuniversal.com/` and `https://www.lctuniversal.com/`: the router answered port 443 in plain text (`wrong version number`), which Chrome reports as `ERR_SSL_PROTOCOL_ERROR`.
+- `http://lctuniversal.com/`: `302` to `https://www.safebrowse.io/warn.html?url=...`, the block page of the router's built-in security filter (Xfinity Advanced Security; Cox uses the same service as `coxsafebrowse.io`).
+- `https://lctuniversaltransport.netlify.app/` through the same router: `200`. The block applies to the domain name only.
+
+Globalping IDs: `2NibmtYBEOnyRRe5p00021M8c` (www, 29/30 OK), `2IAf4qSmEkJLu68nv00021M8e` (apex HTTPS, same probes), `2D5LLJzrs06JH24jt00021M8e` (apex HTTP, shows the safebrowse.io redirect), `2Hy0bDNiUEwYmh6og00021M8d` (netlify.app, 200).
+
+### What the site now does to look like what it is (October 21, 2026)
+
+- `index.html` ships the title, description, Open Graph tags, LocalBusiness JSON-LD and a plain-HTML business summary (see `src/lib/site-head.ts`). Before, every URL returned an empty `<div id="root">` with only script tags.
+- MyLimoBiz's `widget-loader.js` loads only on `/book` or when a visitor reaches for Client Login. Before, every page view loaded three hidden login iframes and a hidden booking iframe (MyLimoBiz, Stripe, Google Maps, Facebook, LogRocket, Square: ~3.4 MB, 118 requests), and a first-time Safari visitor was redirected to `book.mylimobiz.com` and back on whatever page they opened first.
+
+### `www` on Telecom Egypt (and DNS change needed)
+
+`www.lctuniversal.com` is a CNAME to `lctuniversaltransport.netlify.app`, which Netlify geo-routes. From Telecom Egypt (AS8452, Egypt's largest ISP) it resolves to Netlify's Frankfurt edges (`35.157.26.135`, `63.176.8.218`), which don't accept TCP connections from that network, so `www` never loads there. Reproduced from this machine and from the Globalping TE-AS probe (`2PCv0xrLaX4YLmBNr00021M8y`). The apex uses Netlify's anycast address `75.2.60.5`, which loaded from all 21 countries tested (`2fLJuFJFOSVzv0BHh00021M8x`), including that same TE-AS network.
+
+Fix (Namecheap, Domain List → lctuniversal.com → Advanced DNS): replace the `www` CNAME record with an **A record**, host `www`, value `75.2.60.5`, TTL Automatic. `www` only redirects to the apex, so it loses nothing by using the same address.
+
+### Finding out which filter an office uses
+
+Run this on a computer connected to the office Wi-Fi (Terminal on a Mac):
+
+```
+curl -sI http://lctuniversal.com | grep -i location
+nslookup lctuniversal.com
+```
+
+- `location` contains `safebrowse.io`: Xfinity / Comcast Business (or Cox) router security.
+- `location` is `https://lctuniversal.com/` but `nslookup` returns anything other than `75.2.60.5`: a DNS filter. The returned address identifies the vendor.
+- Neither: an office firewall (FortiGate, SonicWall, Sophos, etc.). Its admin's block log names the category.
+
+Chrome won't show the block page itself, because the site sends HSTS and the browser upgrades to HTTPS before the filter can answer.
+
 ## Business details for the forms
 
 | Field | Value |
@@ -36,6 +74,7 @@ Replace `[CURRENT CATEGORY]` with what the vendor's lookup shows.
 
 | Vendor | Used by | Lookup / request | Suggested category |
 |---|---|---|---|
+| **Xfinity Advanced Security** (confirmed blocking) | Comcast / Xfinity home and business gateways | https://spa.xfinity.com/report: choose "I can't reach a website that I want to go to" | Not categorized: ask for the block to be removed |
 | **Fortinet FortiGuard** (confirmed blocking) | FortiGate firewalls, FortiClient | https://www.fortiguard.com/webfilter: look up the domain, then use the rating-change request on the result page | Travel |
 | Cisco Talos | Cisco Umbrella, Meraki, Secure Firewall | https://talosintelligence.com/reputation_center/lookup?search=lctuniversal.com (web categorization request; needs a free Cisco account) | Travel |
 | Palo Alto Networks | PAN-OS URL Filtering, Prisma Access | https://urlfiltering.paloaltonetworks.com/ | Travel |

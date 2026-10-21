@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ExternalLink, Loader2, LogIn, X } from "lucide-react";
 import { MyLimoBizLoginButton } from "./mylimobiz-login-button";
+import { ensureMyLimoBizScript } from "./mylimobiz-widget";
 import { BOOKING } from "@/lib/site-data";
 import {
   getMyLimoBizAuthenticatedServerSnapshot,
@@ -78,12 +79,24 @@ export function MyLimoBizLoginPopover({
 
   const label = authenticated ? "My Account" : "Client Login";
 
+  // widget-loader.js is loaded on the first sign of intent rather than on
+  // every page (see mylimobiz-login-button.tsx for the measured cost). Hover
+  // and focus start it before the click on desktop; on touch, pointerenter
+  // fires with the tap. Every login anchor is already mounted by then, so the
+  // script's single scan still finds them all. Safe to call repeatedly.
+  const loadWidget = () => ensureMyLimoBizScript();
+
   return (
     <div ref={rootRef} className="relative">
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onPointerEnter={loadWidget}
+        onFocus={loadWidget}
+        onClick={() => {
+          loadWidget();
+          setOpen((o) => !o);
+        }}
         aria-expanded={open}
         aria-haspopup="dialog"
         className={triggerClassName}
